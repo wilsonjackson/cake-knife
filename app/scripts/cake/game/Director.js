@@ -1,14 +1,15 @@
 Engine.module('cake.game.Director',
 	[
+		'loop.Plugin',
 		'graphics.Scene'
 	],
-	function (Scene) {
+	function (Plugin, Scene) {
 		'use strict';
 
 		function Director() {
 		}
 
-		Director.prototype = Object.create(Engine.Plugin.prototype);
+		Director.prototype = Object.create(Plugin.prototype);
 
 		Director.prototype.start = function () {
 			var scene = new Scene();
