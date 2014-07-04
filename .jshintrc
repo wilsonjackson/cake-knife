@@ -19,17 +19,13 @@
 	"smarttabs": true,
 	"jquery": true,
 	"predef": [
+		"Q",
 		"Engine",
-		"Vector",
-		"BoundingRect",
-		"CompositeBoundingRect",
-		"BoundingCircle",
-		"QuadTree",
-		"Events",
 
 		"describe",
 		"it",
 		"beforeEach",
-		"expect"
+		"expect",
+		"sinon"
 	]
 }

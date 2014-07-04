@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "stats.js": "*"
+    "stats.js": "*",
+    "q": "~1"
   }
 }

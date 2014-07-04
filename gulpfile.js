@@ -1,3 +1,5 @@
+/* jshint strict: false */
+
 var gulp = require('gulp');
 var rimraf = require('rimraf');
 var usemin = require('gulp-usemin');
@@ -8,9 +10,9 @@ var mocha = require('gulp-mocha-phantomjs');
 var connect = require('gulp-connect');
 
 var config = {
-	src: './app',
-	test: './test',
-	dist: './dist'
+	src: 'app',
+	test: 'test',
+	dist: 'dist'
 };
 
 gulp.task('clean', function (cb) {
@@ -35,11 +37,20 @@ gulp.task('build', ['clean', 'test'], function () {
 			js: [uglify(), rev()],
 			css: [rev()]
 		}))
-		.pipe(gulp.dest(config.dist + '/'))
+		.pipe(gulp.dest(config.dist + '/'));
 });
 
 gulp.task('connect', function () {
-	connect.server({root: config.src, port: 9000});
+	//noinspection JSUnusedGlobalSymbols
+	connect.server({
+		root: config.src,
+		port: 9000,
+		middleware: function (connect) {
+			return [
+				connect().use('/bower_components', connect.static('./bower_components'))
+			];
+		}
+	});
 });
 
 gulp.task('serve', ['connect'], function () {

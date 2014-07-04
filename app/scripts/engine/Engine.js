@@ -1,6 +1,6 @@
 /* global Stats */
 
-(function (window, document) {
+(function (Stats, window, document) {
 	'use strict';
 
 	var modules = {};
@@ -26,7 +26,9 @@
 		Engine.logger.info('Starting preload');
 		artifacts['graphics.sprite.SpriteRepository'].preload().then(function () {
 			Engine.logger.info('Preload complete');
-			session.bootstrap.start();
+			for (var i = 0, len = session.plugins.length; i < len; i++) {
+				session.plugins[i].start();
+			}
 			nextGameTick = new Date().getTime();
 			tick();
 		});
@@ -38,7 +40,9 @@
 		}
 		Engine.logger.info('Game suspended');
 		suspended = true;
-		session.bootstrap.suspend();
+		for (var i = 0, len = session.plugins.length; i < len; i++) {
+			session.plugins[i].suspend();
+		}
 	};
 
 	Engine.resume = function () {
@@ -48,7 +52,9 @@
 		Engine.logger.info('Game resumed');
 		nextGameTick = new Date().getTime();
 		suspended = false;
-		session.bootstrap.resume();
+		for (var i = 0, len = session.plugins.length; i < len; i++) {
+			session.plugins[i].resume();
+		}
 	};
 
 	Engine.getViewport = function () {
@@ -82,20 +88,6 @@
 
 	Engine.module = function (name, deps, module) {
 		modules[name] = [deps, module];
-	};
-
-	Engine.ns = function (name, object) {
-		var segments = name.split('.');
-		var ns = Engine;
-		for (var i = 0, len = segments.length; i < len; i++) {
-			ns = ns[segments[i]] || (ns[segments[i]] = {});
-		}
-		for (var p in object) {
-			if (object.hasOwnProperty(p)) {
-				ns[p] = object[p];
-			}
-		}
-		return ns;
 	};
 
 	function loadModules() {
@@ -138,26 +130,24 @@
 		return artifacts[name];
 	}
 
-	Engine.Bootstrap = function () {};
-	Engine.Bootstrap.prototype.start = function () {
-		throw 'The game must implement a start method.';
-	};
-	Engine.Bootstrap.prototype.preUpdate = function (/*input*/) {};
-	Engine.Bootstrap.prototype.postUpdate = function (/*input*/) {};
-	Engine.Bootstrap.prototype.preRender = function (/*viewport*/) {};
-	Engine.Bootstrap.prototype.postRender = function (/*viewport*/) {};
-	Engine.Bootstrap.prototype.suspend = function () {};
-	Engine.Bootstrap.prototype.resume = function () {};
+	Engine.Plugin = function () {};
+	Engine.Plugin.prototype.start = function () {};
+	Engine.Plugin.prototype.preUpdate = function (/*scene, input*/) {};
+	Engine.Plugin.prototype.postUpdate = function (/*scene, input*/) {};
+	Engine.Plugin.prototype.preRender = function (/*scene, viewport*/) {};
+	Engine.Plugin.prototype.postRender = function (/*scene, viewport*/) {};
+	Engine.Plugin.prototype.suspend = function () {};
+	Engine.Plugin.prototype.resume = function () {};
 
 	function GameSession(config) {
 		if (!config.canvas || !(config.canvas instanceof HTMLCanvasElement)) {
 			throw 'canvas element is required';
 		}
-		if (!config.bootstrap) {
-			throw 'bootstrap object is required';
-		}
 
-		this.bootstrap = new artifacts[config.bootstrap]();
+		this.plugins = (config.plugins || []).map(function (pluginName) {
+			Engine.logger.info('Loading plugin: ' + pluginName);
+			return new artifacts[pluginName]();
+		});
 		this.viewport = new artifacts['graphics.Viewport'](config.canvas);
 		this.input = new artifacts['input.Input']();
 		this.scene = null;
@@ -165,6 +155,7 @@
 	}
 
 	GameSession.prototype.run = (function () {
+		var i, len;
 		var loops = 0;
 		var skipTicks = 1000 / 50; // Target 50fps game updates
 		var maxFrameSkip = 10;
@@ -190,9 +181,13 @@
 				var inputState = this.input.readInput();
 
 				// Update
-				this.bootstrap.preUpdate(this.scene, inputState);
+				for (i = 0, len = this.plugins.length; i < len; i++) {
+					this.plugins[i].preUpdate(this.scene, inputState);
+				}
 				this.scene.update(inputState);
-				this.bootstrap.postUpdate(this.scene, inputState);
+				for (i = 0, len = this.plugins.length; i < len; i++) {
+					this.plugins[i].postUpdate(this.scene, inputState);
+				}
 
 				nextGameTick += skipTicks;
 				loops++;
@@ -201,10 +196,14 @@
 
 			// Render
 			renderStats.begin();
-			this.bootstrap.preRender(this.scene, this.viewport);
+			for (i = 0, len = this.plugins.length; i < len; i++) {
+				this.plugins[i].preRender(this.scene, this.viewport);
+			}
 			this.viewport.clear();
 			this.scene.render(this.viewport);
-			this.bootstrap.postRender(this.scene, this.viewport);
+			for (i = 0, len = this.plugins.length; i < len; i++) {
+				this.plugins[i].postRender(this.scene, this.viewport);
+			}
 			renderStats.end();
 
 			fpsStats.update();
@@ -260,4 +259,4 @@
 	}
 
 	window.Engine = Engine;
-})(window, document);
+})(Stats, window, document);

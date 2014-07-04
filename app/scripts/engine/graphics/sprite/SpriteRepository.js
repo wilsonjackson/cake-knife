@@ -17,27 +17,30 @@ Engine.module('graphics.sprite.SpriteRepository',
 			},
 
 			preload: function () {
-				var callback = null;
+				var promises = [];
 				var urls = Object.keys(images);
 				var countdown = urls.length;
 				Engine.logger.debug('Preloading ' + countdown + ' sprite(s)');
 
 				urls.forEach(function (url) {
+					var d = Q.defer();
 					images[url].onload = function () {
-						countdown--;
-						Engine.logger.debug(url + ' loaded; ' + countdown + ' sprite(s) remaining');
-						if (countdown === 0 && callback) {
-							callback();
+						if (this.width + this.height === 0) {
+							this.onerror();
+							return;
 						}
+						Engine.logger.debug(url + ' loaded; ' + --countdown + ' sprite(s) remaining');
+						d.fulfill();
+					};
+					images[url].onerror = function () {
+						Engine.logger.error('Failed loading sprite ' + url);
+						d.reject();
 					};
 					images[url].src = 'images/' + url;
+					promises.push(d.promise);
 				});
 
-				return {
-					then: function (cb) {
-						callback = cb;
-					}
-				};
+				return Q.all(promises);
 			},
 
 			retrieve: function (name) {
