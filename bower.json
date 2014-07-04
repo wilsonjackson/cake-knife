@@ -1,0 +1,13 @@
+{
+  "name": "cake-knife",
+  "version": "0.0.0",
+  "homepage": "https://github.com/wilsonjackson/cake-knife",
+  "authors": [
+    "Majid Burney <moocow@euphoricsoup.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "stats.js": "*"
+  }
+}
