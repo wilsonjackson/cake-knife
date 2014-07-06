@@ -9,11 +9,17 @@ var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha-phantomjs');
 var connect = require('gulp-connect');
 var preprocess = require('connect-preprocess');
+var sftp = require('gulp-sftp');
 
 var config = {
 	src: 'app',
 	test: 'test',
-	dist: 'dist'
+	dist: 'dist',
+	deploy: {
+		host: 'euphoricsoup.com',
+		user: 'magid',
+		remotePath: '/home/magid/euphoricsoup.com/cake-knife'
+	}
 };
 
 gulp.task('clean', function (cb) {
@@ -59,6 +65,11 @@ gulp.task('connect', function () {
 
 gulp.task('serve', ['connect'], function () {
 	gulp.watch([config.src + '/scripts/**/*.js', config.test + '/spec/**/*.js'], ['test']);
+});
+
+gulp.task('deploy', ['build'], function () {
+	return gulp.src('dist/**/*')
+		.pipe(sftp(config.deploy));
 });
 
 gulp.task('default', ['clean', 'lint', 'test', 'build']);

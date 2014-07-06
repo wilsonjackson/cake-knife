@@ -13,7 +13,8 @@
     "gulp-jshint": "~1.6.4",
     "jshint-stylish": "~0.2.0",
     "gulp-usemin": "git+https://github.com/wilsonjackson/gulp-usemin.git#resolve-globs",
-    "connect-preprocess": "0.0.1"
+    "connect-preprocess": "0.0.1",
+    "gulp-sftp": "0.0.15"
   },
   "repository": {
     "type": "git",
