@@ -8,6 +8,7 @@ var rev = require('gulp-rev');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha-phantomjs');
 var connect = require('gulp-connect');
+var preprocess = require('connect-preprocess');
 
 var config = {
 	src: 'app',
@@ -47,7 +48,10 @@ gulp.task('connect', function () {
 		port: 9000,
 		middleware: function (connect) {
 			return [
-				connect().use('/bower_components', connect.static('./bower_components'))
+				connect().use('/bower_components', connect.static('./bower_components')),
+				connect().use(preprocess({root: config.src}, [
+					{url: '/index.html', factories: [usemin.resolveGlobs]}
+				]))
 			];
 		}
 	});
