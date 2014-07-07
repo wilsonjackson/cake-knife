@@ -1,10 +1,11 @@
 /* global Stats: false */
 Engine.module('loop.Ticker',
 	[
+		'loop.Plugin',
 		'graphics.Viewport',
 		'input.Input'
 	],
-	function (Viewport, Input) {
+	function (Plugin, Viewport, Input) {
 		'use strict';
 
 		function Ticker(config) {
@@ -14,7 +15,13 @@ Engine.module('loop.Ticker',
 
 			this.plugins = (config.plugins || []).map(function (pluginName) {
 				Engine.logger.info('Loading plugin: ' + pluginName);
-				return new (Engine.getArtifact(pluginName))();
+				var PluginArtifact = Engine.getArtifact(pluginName);
+				if (PluginArtifact instanceof Plugin) {
+					return PluginArtifact;
+				}
+				else {
+					return new PluginArtifact();
+				}
 			});
 			this.viewport = new Viewport(config.canvas);
 			this.input = new Input();

@@ -5,3 +5,6 @@ Cake Knife engine changes
   (string) to 'plugins' (array of strings).
 - Extracted GameSession from Engine and put it in a module called loop.Ticker.
 - Replaced hokey fake promise returned by SpriteRepository with Q library.
+- Ticker accepts plugins as constructors or Plugin instances.
+- Added DebugSprite.
+- Added Perspective plugin to sort world objects according to their Y-position.

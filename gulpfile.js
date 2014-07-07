@@ -30,12 +30,14 @@ gulp.task('lint', function () {
 	return gulp.src([config.src + '/scripts/**/*.js', config.test + '/spec/**/*.js'])
 		.pipe(jshint())
 		.pipe(jshint.reporter('jshint-stylish'))
-		.pipe(jshint.reporter('fail'));
+		.pipe(jshint.reporter('fail'))
+		.on('error', console.error);
 });
 
 gulp.task('test', ['lint'], function () {
 	return gulp.src(config.test + '/runner.html')
-		.pipe(mocha());
+		.pipe(mocha())
+		.on('error', console.error);
 });
 
 gulp.task('build', ['clean', 'test'], function () {

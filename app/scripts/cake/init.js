@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	Engine.init({
 		canvas: document.getElementById('viewport'),
-		plugins: ['cake.game.Director']
+		plugins: ['cake.game.Director', 'plugins.Perspective']
 	});
 	Engine.start();
 }, false);

@@ -26,6 +26,7 @@ Engine.module('world.World',
 
 		World.prototype = Object.create(Scene.prototype);
 
+		//noinspection JSUnusedGlobalSymbols
 		World.prototype.getPlayers = function () {
 			var players = [];
 			for (var i = 0, len = this.objects.length; i < len; i++) {
@@ -51,11 +52,13 @@ Engine.module('world.World',
 			}
 		};
 
+		//noinspection JSUnusedGlobalSymbols
 		World.prototype.addInterloper = function (interloper) {
 			this.interlopers[this.interlopers.length] = interloper;
 			interloper.init(this);
 		};
 
+		//noinspection JSUnusedGlobalSymbols
 		World.prototype.removeInterloper = function (interloper) {
 			var i = this.interlopers.indexOf(interloper);
 			if (i > -1) {
@@ -81,6 +84,7 @@ Engine.module('world.World',
 			this.addObject(ObjectFactory.spawn(id, x, y, orientation));
 		};
 
+		//noinspection JSUnusedGlobalSymbols
 		World.prototype.spawnObjectAt = function (id, object, orientation) {
 			var center = object.entity.getCenter();
 			this.addObject(ObjectFactory.spawnAtCenter(id, center.x, center.y, orientation));
@@ -112,6 +116,7 @@ Engine.module('world.World',
 			this.height = 0;
 		};
 
+		//noinspection JSUnusedGlobalSymbols
 		World.prototype.loadMap = function (map) {
 			Engine.logger.info('Loading new map');
 
@@ -191,13 +196,15 @@ Engine.module('world.World',
 			// Pre-calculate the visible part of the map and only render enough tiles to keep it filled.
 			// Safety conditions are attached to the calculation of the last row and last column to ensure it never tries
 			// to render a tile that doesn't exist (when you're near the extreme right or bottom edge).
-			var firstRow = Math.floor(viewport.sceneOffset.y / this.map.tileSize);
-			var lastRow = Math.min(firstRow + Math.ceil(viewport.height / this.map.tileSize) + 1, this.terrain.length / this.map.width);
-			var firstCol = Math.floor(viewport.sceneOffset.x / this.map.tileSize);
-			var lastCol = Math.min(firstCol + Math.ceil(viewport.width / this.map.tileSize) + 1, this.map.width);
-			for (var row = firstRow; row < lastRow; row++) {
-				for (var col = firstCol; col < lastCol; col++) {
-					this.terrain[(row * this.map.width + col)].render(viewport, col * this.map.tileSize, row * this.map.tileSize + this.map.tileSize);
+			if (this.map) {
+				var firstRow = Math.floor(viewport.sceneOffset.y / this.map.tileSize);
+				var lastRow = Math.min(firstRow + Math.ceil(viewport.height / this.map.tileSize) + 1, this.terrain.length / this.map.width);
+				var firstCol = Math.floor(viewport.sceneOffset.x / this.map.tileSize);
+				var lastCol = Math.min(firstCol + Math.ceil(viewport.width / this.map.tileSize) + 1, this.map.width);
+				for (var row = firstRow; row < lastRow; row++) {
+					for (var col = firstCol; col < lastCol; col++) {
+						this.terrain[(row * this.map.width + col)].render(viewport, col * this.map.tileSize, row * this.map.tileSize + this.map.tileSize);
+					}
 				}
 			}
 
