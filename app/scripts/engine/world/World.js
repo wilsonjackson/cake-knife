@@ -1,14 +1,13 @@
 Engine.module('world.World',
 	[
 		'physics.Physics',
-		'physics.EntityCategory',
-		'world.objects.ObjectFactory',
-		'world.objects.ObjectType',
+		'physics.NodeCategory',
+		'world.entities.EntityFactory',
 		'world.map.MapGrid',
 		'graphics.Scene',
 		'graphics.Terrain'
 	],
-	function (Physics, EntityCategory, ObjectFactory, ObjectType, MapGrid, Scene, Terrain) {
+	function (Physics, NodeCategory, EntityFactory, MapGrid, Scene, Terrain) {
 		'use strict';
 
 		var DEBUG_DRAW_MAP_OBSTACLES = false;
@@ -18,10 +17,10 @@ Engine.module('world.World',
 			this.map = null;
 			this.terrain = [];
 			this.interlopers = [];
-			this.objects = [];
+			this.entities = [];
 			this.width = 0;
 			this.height = 0;
-			this._removeObjectCallback = this.removeObject.bind(this);
+			this._removeEntityCallback = this.removeEntity.bind(this);
 		}
 
 		World.prototype = Object.create(Scene.prototype);
@@ -29,26 +28,26 @@ Engine.module('world.World',
 		//noinspection JSUnusedGlobalSymbols
 		World.prototype.getPlayers = function () {
 			var players = [];
-			for (var i = 0, len = this.objects.length; i < len; i++) {
-				if (this.objects[i] !== null && this.objects[i].type === ObjectType.PLAYER) {
-					players.push(this.objects[i]);
+			for (var i = 0, len = this.entities.length; i < len; i++) {
+				if (this.entities[i] !== null && this.entities[i].node.category === NodeCategory.PLAYER) {
+					players.push(this.entities[i]);
 				}
 			}
 			return players;
 		};
 
-		World.prototype.addObject = function (object) {
-			this.objects[this.objects.length] = object;
-			this.physics.addEntity(object.entity);
-			object.onDestroy(this._removeObjectCallback);
+		World.prototype.addEntity = function (entity) {
+			this.entities[this.entities.length] = entity;
+			this.physics.addNode(entity.node);
+			entity.onDestroy(this._removeEntityCallback);
 		};
 
-		World.prototype.removeObject = function (object) {
-			var i = this.objects.indexOf(object);
+		World.prototype.removeEntity = function (entity) {
+			var i = this.entities.indexOf(entity);
 			if (i > -1) {
-				// The reference to the removed object is broken, and will be cleaned up at the end of the current/next
+				// The reference to the removed entity is broken, and will be cleaned up at the end of the current/next
 				// update loop. If it were spliced immediately, it could cause unpredictable skipping of updates.
-				this.objects[i] = null;
+				this.entities[i] = null;
 			}
 		};
 
@@ -68,9 +67,9 @@ Engine.module('world.World',
 
 		World.prototype._cleanAfterUpdate = function () {
 			var i, len;
-			for (i = 0, len = this.objects.length; i < len; i++) {
-				if (this.objects[i] === null) {
-					this.objects.splice(i--, 1);
+			for (i = 0, len = this.entities.length; i < len; i++) {
+				if (this.entities[i] === null) {
+					this.entities.splice(i--, 1);
 				}
 			}
 			for (i = 0, len = this.interlopers.length; i < len; i++) {
@@ -81,37 +80,37 @@ Engine.module('world.World',
 		};
 
 		World.prototype.spawnObject = function (id, x, y, orientation) {
-			this.addObject(ObjectFactory.spawn(id, x, y, orientation));
+			this.addEntity(EntityFactory.spawn(id, x, y, orientation));
 		};
 
 		//noinspection JSUnusedGlobalSymbols
 		World.prototype.spawnObjectAt = function (id, object, orientation) {
-			var center = object.entity.getCenter();
-			this.addObject(ObjectFactory.spawnAtCenter(id, center.x, center.y, orientation));
+			var center = object.node.getCenter();
+			this.addEntity(EntityFactory.spawnAtCenter(id, center.x, center.y, orientation));
 		};
 
 		//noinspection JSUnusedGlobalSymbols
 		World.prototype.firstObjectOfType = function (type) {
-			for (var i = 0, len = this.objects.length; i < len; i++) {
-				if (this.objects[i].type === type) {
-					return this.objects[i];
+			for (var i = 0, len = this.entities.length; i < len; i++) {
+				if (this.entities[i].type === type) {
+					return this.entities[i];
 				}
 			}
 			return null;
 		};
 
 		World.prototype.reset = function () {
-			for (var i = 0, len = this.objects.length; i < len; i++) {
-				if (this.objects[i]) {
-					this.objects[i].destroy();
+			for (var i = 0, len = this.entities.length; i < len; i++) {
+				if (this.entities[i]) {
+					this.entities[i].destroy();
 				}
 			}
-			this.physics.destroyAllEntities();
+			this.physics.destroyAllNodes();
 
 			this.map = null;
-			this.mapEntities = [];
+			this.mapNodes = [];
 			this.terrain = [];
-			this.objects = [];
+			this.entities = [];
 			this.width = 0;
 			this.height = 0;
 		};
@@ -130,23 +129,23 @@ Engine.module('world.World',
 			world.height = Math.ceil(world.terrain.length / map.width) * map.tileSize;
 
 			// Create physical map boundaries
-			this.physics.addEntity(Physics.createRectEntity(EntityCategory.EDGE, 0, -map.tileSize, world.width, map.tileSize, world).setStatic());
-			this.physics.addEntity(Physics.createRectEntity(EntityCategory.EDGE, world.width, 0, map.tileSize, world.height, world).setStatic());
-			this.physics.addEntity(Physics.createRectEntity(EntityCategory.EDGE, 0, world.height, world.width, map.tileSize, world).setStatic());
-			this.physics.addEntity(Physics.createRectEntity(EntityCategory.EDGE, -map.tileSize, 0, map.tileSize, world.height, world).setStatic());
+			this.physics.addNode(Physics.createRectNode(NodeCategory.EDGE, 0, -map.tileSize, world.width, map.tileSize, world).setStatic());
+			this.physics.addNode(Physics.createRectNode(NodeCategory.EDGE, world.width, 0, map.tileSize, world.height, world).setStatic());
+			this.physics.addNode(Physics.createRectNode(NodeCategory.EDGE, 0, world.height, world.width, map.tileSize, world).setStatic());
+			this.physics.addNode(Physics.createRectNode(NodeCategory.EDGE, -map.tileSize, 0, map.tileSize, world.height, world).setStatic());
 
-			this.mapEntities = [];
-			// Create impassable tile entities
+			this.mapNodes = [];
+			// Create impassable tile nodes
 			var grid = new MapGrid(map.width, map.tileSize);
 			grid.load(world.terrain);
 			var boundaryRects = grid.calculateBoundaries();
 			for (i = 0, len = boundaryRects.length; i < len; i++) {
-				this.mapEntities[this.mapEntities.length] = this.physics.addEntity(
-					Physics.createEntity(EntityCategory.WALL, boundaryRects[i]).setStatic());
+				this.mapNodes[this.mapNodes.length] = this.physics.addNode(
+					Physics.createNode(NodeCategory.WALL, boundaryRects[i]).setStatic());
 			}
 
-			// Populate world with level objects
-			map.objects.forEach(function (object) {
+			// Populate world with level entities
+			map.entities.forEach(function (object) {
 				world.spawnObject(object.id, object.x, object.y, object.orientation);
 			});
 
@@ -164,10 +163,10 @@ Engine.module('world.World',
 					this.interlopers[i].preUpdate(this, inputState);
 				}
 			}
-			for (i = 0, len = this.objects.length; i < len; i++) {
-				// Defend against objects deleted during update
-				if (this.objects[i] !== null) {
-					this.objects[i].update(this, inputState);
+			for (i = 0, len = this.entities.length; i < len; i++) {
+				// Defend against entities deleted during update
+				if (this.entities[i] !== null) {
+					this.entities[i].update(this, inputState);
 				}
 			}
 			for (i = 0, len = this.interlopers.length; i < len; i++) {
@@ -181,7 +180,7 @@ Engine.module('world.World',
 					this.interlopers[i].postUpdate(this, inputState);
 				}
 			}
-			// Clean up deleted objects after update and physics
+			// Clean up deleted entities after update and physics
 			this._cleanAfterUpdate();
 		};
 
@@ -208,18 +207,18 @@ Engine.module('world.World',
 				}
 			}
 
-			for (i = 0, len = this.objects.length; i < len; i++) {
-				this.objects[i].render(viewport);
+			for (i = 0, len = this.entities.length; i < len; i++) {
+				this.entities[i].render(viewport);
 			}
 
 			if (DEBUG_DRAW_MAP_OBSTACLES) {
-				for (i = 0, len = this.mapEntities.length; i < len; i++) {
-					var mapEntity = this.mapEntities[i];
-					viewport.context.strokeStyle = mapEntity.category.isA(EntityCategory.OBSTACLE) ? '#ff0' : '#0f0';
+				for (i = 0, len = this.mapNodes.length; i < len; i++) {
+					var mapNode = this.mapNodes[i];
+					viewport.context.strokeStyle = mapNode.category.isA(NodeCategory.OBSTACLE) ? '#ff0' : '#0f0';
 					viewport.context.strokeRect(
-							mapEntity.getX() - viewport.sceneOffset.x,
-							mapEntity.getY() - viewport.sceneOffset.y,
-						mapEntity.getWidth(), mapEntity.getHeight());
+							mapNode.getX() - viewport.sceneOffset.x,
+							mapNode.getY() - viewport.sceneOffset.y,
+						mapNode.getWidth(), mapNode.getHeight());
 				}
 			}
 

@@ -1,8 +1,8 @@
 Engine.module('physics.Collision', function () {
 	'use strict';
 
-	function Collision(entity, intersection) {
-		this.entity = entity;
+	function Collision(node, intersection) {
+		this.node = node;
 		this.intersection = intersection;
 	}
 

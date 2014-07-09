@@ -8,3 +8,5 @@ Cake Knife engine changes
 - Ticker accepts plugins as constructors or Plugin instances.
 - Added DebugSprite.
 - Added Perspective plugin to sort world objects according to their Y-position.
+- Entity -> Node; EntityCategory -> NodeCategory; SpriteObject -> Entity; ObjectFactory -> EntityFactory;
+  ObjectType -> DELETED

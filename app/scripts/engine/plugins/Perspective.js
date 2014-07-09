@@ -18,15 +18,15 @@ Engine.module('plugins.Perspective',
 
 			// Insertion sort — good for non-volatile data. (It lots of stuff moves around all the time, another sort
 			// might be better.)
-			for (var i = 1, len = scene.objects.length; i < len; i++) {
-				var object = scene.objects[i];
+			for (var i = 1, len = scene.entities.length; i < len; i++) {
+				var object = scene.entities[i];
 				for (var j = i - 1; j >= 0; j--) {
-					if (scene.objects[j].entity.getY() <= object.entity.getY()) {
+					if (scene.entities[j].node.getY() <= object.node.getY()) {
 						break;
 					}
-					scene.objects[j + 1] = scene.objects[j];
+					scene.entities[j + 1] = scene.entities[j];
 				}
-				scene.objects[j + 1] = object;
+				scene.entities[j + 1] = object;
 			}
 		};
 

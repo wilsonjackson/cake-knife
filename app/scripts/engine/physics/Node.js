@@ -1,4 +1,4 @@
-Engine.module('physics.Entity',
+Engine.module('physics.Node',
 	[
 		'math.Vector',
 		'util.Events'
@@ -10,13 +10,14 @@ Engine.module('physics.Entity',
 			return !!(o && o.constructor && o.call && o.apply);
 		}
 
-		function Entity(id, category, bounds, orientation, object) {
+		function Node(id, category, bounds, orientation, object) {
 			Events.mixin(this);
 			this._id = id;
 			this.category = category;
 			this.object = object;
 			this.bounds = bounds;
 			this.orientation = orientation;
+			//noinspection JSUnusedGlobalSymbols
 			this.lastOrientation = null;
 			this.nextMovement = new Vector(0, 0);
 			this.currentMovement = new Vector(0, 0);
@@ -25,19 +26,21 @@ Engine.module('physics.Entity',
 			this.collidable = true;
 			this.collisionListeners = [];
 			this.isColliding = false;
+			//noinspection JSUnusedGlobalSymbols
 			this.isRotated = false;
 		}
 
-		Entity.prototype.setStatic = function () {
+		Node.prototype.setStatic = function () {
 			this.isStatic = true;
 			return this;
 		};
 
-		Entity.prototype.onDestroy = function (fn) {
+		Node.prototype.onDestroy = function (fn) {
 			this.on('destroy', fn);
 		};
 
-		Entity.prototype.addCollisionListener = function (listener) {
+		//noinspection JSUnusedGlobalSymbols
+		Node.prototype.addCollisionListener = function (listener) {
 			if (isFunction(listener)) {
 				listener = {
 					solveCollision: function () {},
@@ -47,52 +50,55 @@ Engine.module('physics.Entity',
 			this.collisionListeners[this.collisionListeners.length] = listener;
 		};
 
-		Entity.prototype.impulse = function (x, y) {
+		Node.prototype.impulse = function (x, y) {
 			this.nextMovement = this.nextMovement.add(new Vector(x, y));
 		};
 
-		Entity.prototype.getOrientation = function () {
+		Node.prototype.getOrientation = function () {
 			return this.orientation;
 		};
 
-		Entity.prototype.setOrientation = function (orientation) {
+		//noinspection JSUnusedGlobalSymbols
+		Node.prototype.setOrientation = function (orientation) {
 			// Detect x/y orientation change
 			if ((orientation.asRadians() + this.orientation.asRadians()) % Math.PI > 0) {
 				this.bounds.rotate();
+				//noinspection JSUnusedGlobalSymbols
 				this.isRotated = true;
 			}
+			//noinspection JSUnusedGlobalSymbols
 			this.lastOrientation = this.orientation;
 			this.orientation = orientation;
 		};
 
-		Entity.prototype.getX = function () {
+		Node.prototype.getX = function () {
 			return this.bounds.left();
 		};
 
-		Entity.prototype.getY = function () {
+		Node.prototype.getY = function () {
 			return this.bounds.top();
 		};
 
-		Entity.prototype.getWidth = function () {
+		Node.prototype.getWidth = function () {
 			return this.bounds.width();
 		};
 
-		Entity.prototype.getHeight = function () {
+		Node.prototype.getHeight = function () {
 			return this.bounds.height();
 		};
 
-		Entity.prototype.getCenter = function () {
+		Node.prototype.getCenter = function () {
 			return this.bounds.center();
 		};
 
-		Entity.prototype.integrate = function () {
+		Node.prototype.integrate = function () {
 			this.bounds.move(this.nextMovement);
 			this.currentMovement = this.nextMovement;
 			this.nextMovement = new Vector(0, 0);
 			this.isColliding = false;
 		};
 
-		Entity.prototype.solveCollision = function (collision, world) {
+		Node.prototype.solveCollision = function (collision, world) {
 			for (var i = 0, len = this.collisionListeners.length; i < len; i++) {
 				var adjustment = this.collisionListeners[i].solveCollision(collision, world);
 				if (adjustment) {
@@ -101,14 +107,14 @@ Engine.module('physics.Entity',
 			}
 		};
 
-		Entity.prototype.collide = function (collision, world) {
+		Node.prototype.collide = function (collision, world) {
 			for (var i = 0, len = this.collisionListeners.length; i < len; i++) {
 				this.collisionListeners[i].collide(collision, world);
 				this.isColliding = true;
 			}
 		};
 
-		Entity.prototype.destroy = function () {
+		Node.prototype.destroy = function () {
 			this.collidable = false;
 			this.trigger('destroy', this);
 			delete this.object;
@@ -119,9 +125,9 @@ Engine.module('physics.Entity',
 			Events.destroyMixin(this);
 		};
 
-		Entity.prototype.toString = function () {
-			return 'Entity(id=' + this._id + ', category=' + this.category + ', bounds=' + this.bounds + ')';
+		Node.prototype.toString = function () {
+			return 'Node(id=' + this._id + ', category=' + this.category + ', bounds=' + this.bounds + ')';
 		};
 
-		return Entity;
+		return Node;
 	});

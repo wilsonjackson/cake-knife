@@ -1,4 +1,4 @@
-Engine.module('world.objects.ObjectFactory',
+Engine.module('world.entities.EntityFactory',
 	['physics.Orientation'],
 	function (Orientation) {
 		'use strict';
@@ -6,7 +6,7 @@ Engine.module('world.objects.ObjectFactory',
 		var types = {};
 
 		//noinspection UnnecessaryLocalVariableJS
-		var ObjectFactory = {
+		var EntityFactory = {
 			register: function (id, ctor) {
 				types[id] = ctor;
 			},
@@ -34,5 +34,5 @@ Engine.module('world.objects.ObjectFactory',
 			}
 		};
 
-		return ObjectFactory;
+		return EntityFactory;
 	});

@@ -5,133 +5,133 @@ Engine.module('physics.Physics',
 		'math.BoundingCircle',
 		'util.QuadTree',
 		'physics.Collision',
-		'physics.Entity',
+		'physics.Node',
 		'physics.Orientation'
 	],
-	function (Vector, BoundingRect, BoundingCircle, QuadTree, Collision, Entity, Orientation) {
+	function (Vector, BoundingRect, BoundingCircle, QuadTree, Collision, Node, Orientation) {
 		'use strict';
 
-		var entityUid = 0;
+		var node = 0;
 
 		function isFunction(o) {
 			return !!(o && o.constructor && o.call && o.apply);
 		}
 
-		function detectObjectCollision(entityA, entityB, world) {
-			var collidableA = entityA.collidable;
-			var collidableB = entityB.collidable;
+		function detectObjectCollision(nodeA, nodeB, world) {
+			var collidableA = nodeA.collidable;
+			var collidableB = nodeB.collidable;
 			if ((collidableA === true && collidableB === true) ||
-				(isFunction(entityA.collidable) && entityA.collidable(entityB)) ||
-				(isFunction(entityB.collidable) && entityB.collidable(entityA))) {
+				(isFunction(nodeA.collidable) && nodeA.collidable(nodeB)) ||
+				(isFunction(nodeB.collidable) && nodeB.collidable(nodeA))) {
 
-				var intersection = entityA.bounds.intersection(entityB.bounds);
+				var intersection = nodeA.bounds.intersection(nodeB.bounds);
 				if (intersection !== null) {
-					var collisionA = new Collision(entityB, intersection);
-					var solutionA = entityA.solveCollision(collisionA, world);
+					var collisionA = new Collision(nodeB, intersection);
+					var solutionA = nodeA.solveCollision(collisionA, world);
 
-					var collisionB = new Collision(entityA, intersection);
-					var solutionB = entityB.solveCollision(collisionB, world);
+					var collisionB = new Collision(nodeA, intersection);
+					var solutionB = nodeB.solveCollision(collisionB, world);
 
 					if (solutionA) {
-						entityA.bounds.move(solutionA);
+						nodeA.bounds.move(solutionA);
 					}
 					if (solutionB) {
-						entityB.bounds.move(solutionB);
+						nodeB.bounds.move(solutionB);
 					}
 
-					entityA.collide(collisionA, world);
-					entityB.collide(collisionB, world);
+					nodeA.collide(collisionA, world);
+					nodeB.collide(collisionB, world);
 				}
 			}
 		}
 
-		function entityToQuadTreeObject(entity) {
+		function nodeToQuadTreeObject(node) {
 			return {
-				e: entity,
-				x: entity.bounds.left(),
-				y: entity.bounds.top(),
-				w: entity.bounds.width(),
-				h: entity.bounds.height()
+				e: node,
+				x: node.bounds.left(),
+				y: node.bounds.top(),
+				w: node.bounds.width(),
+				h: node.bounds.height()
 			};
 		}
 
 		function Physics(world) {
 			this.world = world;
-			this.entities = [];
+			this.nodes = [];
 		}
 
-		Physics.prototype.addEntity = function (entity) {
+		Physics.prototype.addNode = function (node) {
 			var self = this;
-			self.entities[self.entities.length] = entity;
-			entity.onDestroy(function () {
-				var index = self.entities.indexOf(entity);
+			self.nodes[self.nodes.length] = node;
+			node.onDestroy(function () {
+				var index = self.nodes.indexOf(node);
 				if (index > -1) {
-					self.entities.splice(index, 1);
+					self.nodes.splice(index, 1);
 				}
 			});
-			return entity;
+			return node;
 		};
 
-		Physics.prototype.destroyAllEntities = function () {
-			for (var i = 0, len = this.entities.length; i < len; i++) {
-				if (this.entities[i]) {
-					this.entities[i].destroy();
+		Physics.prototype.destroyAllNodes = function () {
+			for (var i = 0, len = this.nodes.length; i < len; i++) {
+				if (this.nodes[i]) {
+					this.nodes[i].destroy();
 				}
 			}
-			this.entities = [];
+			this.nodes = [];
 		};
 
 		Physics.prototype.update = function () {
-			var i, j, len = this.entities.length;
+			var i, j, len = this.nodes.length;
 			var compared = {};
 			var quadTree = new QuadTree(1, {x: 0, y: 0, w: this.world.width, h: this.world.height});
 
 			for (i = 0; i < len; i++) {
-				this.entities[i].integrate();
-				quadTree.insert(entityToQuadTreeObject(this.entities[i]));
+				this.nodes[i].integrate();
+				quadTree.insert(nodeToQuadTreeObject(this.nodes[i]));
 			}
 			for (i = 0; i < len; i++) {
-				var entity = this.entities[i];
-				if (!entity) {
-					// Safety check, as entities may be deleted by collision handlers.
+				var node = this.nodes[i];
+				if (!node) {
+					// Safety check, as nodes may be deleted by collision handlers.
 					continue;
 				}
 
-				compared[entity._id] = {};
+				compared[node._id] = {};
 
-				if (entity.collidable === false) {
+				if (node.collidable === false) {
 					continue;
 				}
-				var nearby = quadTree.retrieve(entityToQuadTreeObject(entity));
+				var nearby = quadTree.retrieve(nodeToQuadTreeObject(node));
 				var nlen = nearby.length;
-				for (j = 0; j < nlen && entity.collidable !== false; j++) {
-					var nearbyEntity = nearby[j].e;
-					var alreadyChecked = compared[nearbyEntity._id] && compared[nearbyEntity._id][entity._id];
-					if (alreadyChecked || nearbyEntity.collidable === false || nearbyEntity === entity ||
-						(nearbyEntity.isStatic && entity.isStatic)) {
+				for (j = 0; j < nlen && node.collidable !== false; j++) {
+					var nearbyNode = nearby[j].e;
+					var alreadyChecked = compared[nearbyNode._id] && compared[nearbyNode._id][node._id];
+					if (alreadyChecked || nearbyNode.collidable === false || nearbyNode === node ||
+						(nearbyNode.isStatic && node.isStatic)) {
 						continue;
 					}
-					detectObjectCollision(entity, nearbyEntity, this.world);
-					compared[entity._id][nearbyEntity._id] = true;
+					detectObjectCollision(node, nearbyNode, this.world);
+					compared[node._id][nearbyNode._id] = true;
 				}
 			}
 			for (i = 0; i < len; i++) {
-				if (this.entities[i]) {
-					this.entities[i].isRotated = false;
+				if (this.nodes[i]) {
+					this.nodes[i].isRotated = false;
 				}
 			}
 		};
 
-		Physics.createEntity = function (category, bounds, orientation, object) {
-			return new Entity(++entityUid, category, bounds, orientation, object);
+		Physics.createNode = function (category, bounds, orientation, object) {
+			return new Node(++node, category, bounds, orientation, object);
 		};
 
-		Physics.createRectEntity = function (category, x, y, w, h, orientation, object) {
-			return this.createEntity(category, new BoundingRect(new Vector(x, y), new Vector(w, h)), orientation, object);
+		Physics.createRectNode = function (category, x, y, w, h, orientation, object) {
+			return this.createNode(category, new BoundingRect(new Vector(x, y), new Vector(w, h)), orientation, object);
 		};
 
-		Physics.createCircleEntity = function (category, x, y, r, object) {
-			return this.createEntity(category, new BoundingCircle(new Vector(x, y), r), Orientation.NORTH, object);
+		Physics.createCircleNode = function (category, x, y, r, object) {
+			return this.createNode(category, new BoundingCircle(new Vector(x, y), r), Orientation.NORTH, object);
 		};
 
 		return Physics;
