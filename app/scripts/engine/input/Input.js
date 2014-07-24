@@ -14,6 +14,10 @@ Engine.module('input.Input',
 				83: Input.B,       // s
 				68: Input.C,       // d
 				70: Input.D,       // f
+				16: Input.TOGGLE1, // shift
+				17: Input.TOGGLE2, // ctrl
+				18: Input.TOGGLE3, // alt
+				91: Input.TOGGLE4, // meta
 				80: Input.PAUSE    // p
 			};
 
@@ -55,6 +59,10 @@ Engine.module('input.Input',
 		Input.B = 'b';
 		Input.C = 'c';
 		Input.D = 'd';
+		Input.TOGGLE1 = 't1';
+		Input.TOGGLE2 = 't2';
+		Input.TOGGLE3 = 't3';
+		Input.TOGGLE4 = 't4';
 		Input.PAUSE = 'pause';
 
 		Input.prototype.readInput = function () {

@@ -1,63 +1,90 @@
 Engine.module('graphics.Viewport',
 	[
-		'math.Vector',
-		'math.BoundingRect',
-		'graphics.Graphics'
+		'graphics.Layer'
 	],
-	function (Vector, BoundingRect, Graphics) {
+	function (Layer) {
 		'use strict';
 
-		function Viewport(canvas) {
-			this.canvas = canvas;
-			this.context = canvas.getContext('2d');
-			this.width = canvas.width;
-			this.height = canvas.height;
-			this.background = '#000000';
-			this.canvasOffset = new Vector(0, 0);
-			this.sceneOffset = new Vector(0, 0);
-			this._graphics = null;
+		/**
+		 *
+		 * @constructor
+		 */
+		function Viewport(mainCanvas) {
+			this.mainCanvas = mainCanvas;
+			this.layers = {0: new Layer(mainCanvas, this, true)};
 		}
 
-		Viewport.prototype.clear = function () {
-			this.context.fillStyle = this.background;
-			this.context.fillRect(0, 0, this.width, this.height);
+		// Layer preset constants
+		Viewport.LAYER_BACKGROUND = -10;
+		Viewport.LAYER_MAIN = 0;
+		Viewport.LAYER_FOREGROUND = 10;
+
+		/**
+		 *
+		 * @returns {HTMLCanvasElement}
+		 */
+		Viewport.prototype.cloneCanvas = function () {
+			var canvas = document.createElement('canvas');
+			canvas.width = this.mainCanvas.width;
+			canvas.height = this.mainCanvas.height;
+			return canvas;
 		};
 
-		Viewport.prototype.getGraphics = function () {
-			if (this._graphics === null) {
-				this._graphics = new Graphics(this);
+		/**
+		 *
+		 * @param index
+		 * @param trackScene
+		 * @returns {Layer}
+		 */
+		Viewport.prototype.createLayer = function (index, trackScene) {
+			var canvas = this.cloneCanvas();
+			var layers = Object.keys(this.layers).sort();
+			var insertBefore = null;
+			var nextLayer;
+			while (layers.length > 0) {
+				nextLayer = layers.shift();
+				if (nextLayer > index) {
+					insertBefore = this.getLayer(nextLayer).canvas;
+					break;
+				}
 			}
-			return this._graphics;
+			insertBefore = insertBefore || this.getLayer(nextLayer).canvas.nextSibling;
+			this.mainCanvas.parentNode.insertBefore(canvas, insertBefore);
+
+			this.layers[index] = new Layer(canvas, this, trackScene);
+			if (trackScene) {
+				this.layers[index].sceneOffset = this.layers[0].sceneOffset;
+			}
+			return this.layers[index];
 		};
 
-		Viewport.prototype.getCenter = function () {
-			return this.sceneOffset.add(new Vector(Math.round(this.width / 2), Math.round(this.height / 2)));
+		/**
+		 *
+		 * @param index
+		 * @returns {Layer}
+		 */
+		Viewport.prototype.getLayer = function (index) {
+			if (!this.layers[index]) {
+				this.createLayer(index, true);
+			}
+			return this.layers[index];
 		};
 
-		//noinspection JSUnusedGlobalSymbols
-		Viewport.prototype.getVisibleArea = function () {
-			return new BoundingRect(
-				new Vector(this.sceneOffset.x, this.sceneOffset.y),
-				new Vector(this.width, this.height));
+		/**
+		 *
+		 * @returns {Layer}
+		 */
+		Viewport.prototype.getMainLayer = function () {
+			return this.getLayer(this.LAYER_MAIN);
 		};
 
-		Viewport.prototype.centerOn = function (x, y, w, h, sceneWidth, sceneHeight) {
-			this.sceneOffset = new Vector(
-				Math.round(Math.min(Math.max(0, x - ((this.width - (w || 0)) / 2)), sceneWidth - this.width)),
-				Math.round(Math.min(Math.max(0, y - ((this.height - (h || 0)) / 2)), sceneHeight - this.height)));
-		};
-
-		Viewport.prototype.translate = function (x, y) {
-			return new Vector(x, y).subtract(this.sceneOffset).add(this.canvasOffset);
-		};
-
-		Viewport.prototype.subView = function (x, y, w, h) {
-			var subView = new Viewport(this.canvas);
-			subView.width = w;
-			subView.height = h;
-			subView.background = this.background;
-			subView.canvasOffset = new Vector(x, y);
-			return subView;
+		Viewport.prototype.changeSceneOffset = function (offsetVector) {
+			var layers = Object.keys(this.layers);
+			for (var i = 0, l = layers.length; i < l; i++) {
+				if (this.layers[layers[i]].trackScene) {
+					this.layers[layers[i]].sceneOffset = offsetVector;
+				}
+			}
 		};
 
 		return Viewport;

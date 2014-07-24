@@ -21,7 +21,7 @@ Engine.module('plugins.Perspective',
 			for (var i = 1, len = scene.entities.length; i < len; i++) {
 				var object = scene.entities[i];
 				for (var j = i - 1; j >= 0; j--) {
-					if (scene.entities[j].node.getY() <= object.node.getY()) {
+					if (scene.entities[j].getComponent('transform').position.y <= object.getComponent('transform').position.y) {
 						break;
 					}
 					scene.entities[j + 1] = scene.entities[j];

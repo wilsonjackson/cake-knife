@@ -5,6 +5,12 @@ Engine.module('math.BoundingRect',
 	function (Vector) {
 		'use strict';
 
+		/**
+		 *
+		 * @param position
+		 * @param size
+		 * @constructor
+		 */
 		function BoundingRect(position, size) {
 			this.position = position;
 			this.size = size;

@@ -15,7 +15,7 @@ Engine.module('world.items.Inventory',
 			var itemBag = new ItemBag(item, qty);
 			itemBag.on('nonzero', Array.prototype.push.bind(this._items));
 			itemBag.on('zero', function () {
-				var idx = inv._items.indexOf(itemBag);
+				var idx = Engine.util.Arrays.indexOf(inv._items, itemBag);
 				if (idx > -1) {
 					inv._items.splice(idx, 1);
 				}

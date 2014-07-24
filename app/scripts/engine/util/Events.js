@@ -13,7 +13,7 @@ Engine.module('util.Events', function () {
 	Events.prototype.off = function (name, fn) {
 		var events = this.events[name];
 		if (events) {
-			var i = events.indexOf(fn);
+			var i = Engine.util.Arrays.indexOf(events, fn);
 			if (i > -1) {
 				events.splice(i, 1);
 			}

@@ -5,16 +5,19 @@
   "devDependencies": {
     "gulp": "~3.8.5",
     "gulp-uglify": "~0.3.1",
-    "rimraf": "~2.2.8",
     "wiredep": "~1.8.1",
     "gulp-rev": "~0.4.1",
     "gulp-connect": "~2.0.5",
     "gulp-mocha-phantomjs": "~0.3.0",
     "gulp-jshint": "~1.6.4",
     "jshint-stylish": "~0.2.0",
-    "gulp-usemin": "git+https://github.com/wilsonjackson/gulp-usemin.git#resolve-globs",
-    "connect-preprocess": "0.0.1",
-    "gulp-sftp": "0.0.15"
+    "gulp-sftp": "0.0.15",
+    "gulp-usemin": "git+https://github.com/zont/gulp-usemin.git",
+    "gulp-html-glob-expansion": "~0.1.0",
+    "connect-resource-pipeline": "~0.1.0",
+    "through2": "~0.5.1",
+    "del": "~0.1.1",
+    "gulp-util": "~2.2.20"
   },
   "repository": {
     "type": "git",

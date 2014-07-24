@@ -1,16 +1,18 @@
 Engine.module('graphics.Graphics',
-	['physics.Orientation'],
-	function (Orientation) {
+	[],
+	function () {
 		'use strict';
 
 		function Graphics(viewport) {
 			this.viewport = viewport;
 		}
 
-		Graphics.prototype.drawSprite = function (sprite, x, y, orientation) {
+		Graphics.prototype.drawSprite = function (sprite, position, rotation) {
+			var x = position.x;
+			var y = position.y;
 			var translated;
 			var context = this.viewport.context;
-			if (orientation && orientation !== Orientation.NORTH) {
+			if (rotation !== 0) {
 				// 1. Center the canvas over the center of the sprite.
 				// 2. Rotate the canvas in accordance with the object's orientation (so the direction it should be facing
 				//    is up).
@@ -21,7 +23,7 @@ Engine.module('graphics.Graphics',
 				context.save();
 				translated = this.viewport.translate(x + xCenterOffset, y + yCenterOffset);
 				context.translate(translated.x, translated.y);
-				context.rotate(orientation.asRadians());
+				context.rotate(rotation);
 				sprite.draw(context, -xCenterOffset, -yCenterOffset);
 				context.restore();
 			}

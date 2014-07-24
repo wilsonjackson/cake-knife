@@ -15,7 +15,7 @@ Engine.module('loop.Ticker',
 
 			this.plugins = (config.plugins || []).map(function (pluginName) {
 				Engine.logger.info('Loading plugin: ' + pluginName);
-				var PluginArtifact = Engine.getArtifact(pluginName);
+				var PluginArtifact = Engine.injector.get(pluginName);
 				if (PluginArtifact instanceof Plugin) {
 					return PluginArtifact;
 				}
@@ -35,10 +35,20 @@ Engine.module('loop.Ticker',
 		Ticker.prototype.start = function () {
 			var self = this;
 			for (var i = 0, len = this.plugins.length; i < len; i++) {
-				this.plugins[i].start();
+				try {
+					this.plugins[i].start(this.viewport);
+				}
+				catch (e) {
+					Engine.logger.error('Caught while running Plugin.start(): ' + (e.stack || e));
+				}
 			}
 			function tick() {
-				self.run();
+				try {
+					self.run();
+				}
+				catch (e) {
+					Engine.logger.error('Caught while executing tick: ' + (e.stack || e));
+				}
 				window.requestAnimationFrame(tick, document.body);
 			}
 			tick();
@@ -112,7 +122,6 @@ Engine.module('loop.Ticker',
 				for (i = 0, len = this.plugins.length; i < len; i++) {
 					this.plugins[i].preRender(this.scene, this.viewport);
 				}
-				this.viewport.clear();
 				this.scene.render(this.viewport);
 				for (i = 0, len = this.plugins.length; i < len; i++) {
 					this.plugins[i].postRender(this.scene, this.viewport);

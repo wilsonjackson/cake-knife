@@ -20,8 +20,13 @@ Engine.module('logging.DefaultLogger', function () {
 		console.warn.apply(console, ['[' + Engine.tick + ']'].concat(Array.prototype.slice.call(arguments)));
 	};
 
-	DefaultLogger.prototype.error = function (/*message*/) {
-		console.error.apply(console, ['[' + Engine.tick + ']'].concat(Array.prototype.slice.call(arguments)));
+	DefaultLogger.prototype.error = function (message) {
+		if (message.stack) {
+			console.error('[' + Engine.tick + '] ' + message.stack);
+		}
+		else {
+			console.error.apply(console, ['[' + Engine.tick + ']'].concat(Array.prototype.slice.call(arguments)));
+		}
 	};
 
 	return DefaultLogger;

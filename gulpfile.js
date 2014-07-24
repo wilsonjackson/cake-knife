@@ -1,14 +1,19 @@
 /* jshint strict: false */
 
 var gulp = require('gulp');
-var rimraf = require('rimraf');
+var gutil = require('gulp-util');
+var del = require('del');
+var through = require('through2');
+var path = require('path');
+var exec = require('child_process').exec;
 var usemin = require('gulp-usemin');
 var uglify = require('gulp-uglify');
 var rev = require('gulp-rev');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha-phantomjs');
 var connect = require('gulp-connect');
-var preprocess = require('connect-preprocess');
+var resourcePipeline = require('connect-resource-pipeline');
+var htmlGlob = require('gulp-html-glob-expansion');
 var sftp = require('gulp-sftp');
 
 var config = {
@@ -23,21 +28,35 @@ var config = {
 };
 
 gulp.task('clean', function (cb) {
-	rimraf(config.dist, cb);
+	del(config.dist, cb);
 });
 
 gulp.task('lint', function () {
 	return gulp.src([config.src + '/scripts/**/*.js', config.test + '/spec/**/*.js'])
 		.pipe(jshint())
+		.on('error', console.error)
 		.pipe(jshint.reporter('jshint-stylish'))
-		.pipe(jshint.reporter('fail'))
-		.on('error', console.error);
+		.pipe(jshint.reporter('fail'));
 });
 
-gulp.task('test', ['lint'], function () {
+gulp.task('test'/*, ['lint']*/, function () {
 	return gulp.src(config.test + '/runner.html')
 		.pipe(mocha())
-		.on('error', console.error);
+		.on('error', function () {});
+});
+
+gulp.task('images', function () {
+	return gulp.src([config.src + '/**/src/*.png'])
+		.pipe(through.obj(function (file, enc, done) {
+			var resized = file.clone();
+			resized.path = path.join(path.dirname(path.dirname(file.path)), path.basename(file.path));
+			exec('convert ' + file.path + ' -scale 400% ' + resized.path, function (err) {
+				if (!err) {
+					gutil.log(gutil.colors.magenta(file.relative), '->', gutil.colors.magenta(resized.relative));
+				}
+				done(err);
+			});
+		}));
 });
 
 gulp.task('build', ['clean', 'test'], function () {
@@ -57,8 +76,8 @@ gulp.task('connect', function () {
 		middleware: function (connect) {
 			return [
 				connect().use('/bower_components', connect.static('./bower_components')),
-				connect().use(preprocess({root: config.src}, [
-					{url: '/index.html', factories: [usemin.resolveGlobs]}
+				connect().use(resourcePipeline({root: config.src}, [
+					{url: '/index.html', factories: [htmlGlob]}
 				]))
 			];
 		}

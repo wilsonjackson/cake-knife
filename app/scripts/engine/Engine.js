@@ -4,7 +4,6 @@
 	'use strict';
 
 	var modules = {};
-	var artifacts = {};
 	var ticker;
 
 	var Engine = {};
@@ -14,15 +13,17 @@
 
 	Engine.init = function (config) {
 		checkNotInitialized();
-		loadModules();
-		this.logger = new artifacts['logging.DefaultLogger']();
-		ticker = new artifacts['loop.Ticker'](config);
+		this.injector = new Engine.Injector();
+		this.injector.load(modules);
+		modules = [];
+		this.logger = new (this.injector.get('logging.DefaultLogger'))();
+		ticker = new (this.injector.get('loop.Ticker'))(config);
 		registerGlobalEventHandlers();
 	};
 
 	Engine.start = function () {
 		Engine.logger.info('Starting preload');
-		artifacts['graphics.sprite.SpriteRepository'].preload().then(function () {
+		this.injector.get('resources.ResourceLoader').load().then(function () {
 			Engine.logger.info('Preload complete');
 			ticker.start();
 		});
@@ -34,10 +35,6 @@
 
 	Engine.resume = function () {
 		ticker.resume();
-	};
-
-	Engine.getArtifact = function (name) {
-		return artifacts[name];
 	};
 
 	Engine.getViewport = function () {
@@ -73,23 +70,30 @@
 		modules[name] = [deps, module];
 	};
 
+	Engine.Injector = function () {
+	};
+
+	Engine.Injector.prototype.load = function (modules) {
+		this.artifacts = {};
+		var names = Object.keys(modules);
+		var stack = [];
+		var loaded = {};
+		for (var i = 0, len = names.length; i < len; i++) {
+			mod(names[i], stack, loaded, this.artifacts);
+		}
+	};
+
+	Engine.Injector.prototype.get = function (name) {
+		return this.artifacts[name];
+	};
+
 	function checkNotInitialized() {
 		if (ticker) {
 			throw 'Engine already initialized';
 		}
 	}
 
-	function loadModules() {
-		var names = Object.keys(modules);
-		var stack = [];
-		var loaded = {};
-		for (var i = 0, len = names.length; i < len; i++) {
-			mod(names[i], stack, loaded);
-		}
-		modules = [];
-	}
-
-	function mod(name, stack, loaded) {
+	function mod(name, stack, loaded, artifacts) {
 		if (loaded[name]) {
 			return artifacts[name];
 		}
@@ -110,11 +114,16 @@
 
 		stack.push(name);
 		for (var i = 0, len = deps.length; i < len; i++) {
-			args.push(mod(deps[i], stack, loaded));
+			args.push(mod(deps[i], stack, loaded, artifacts));
 		}
 		stack.pop();
 
-		artifacts[name] = fn.apply(null, args);
+		try {
+			artifacts[name] = fn.apply(null, args);
+		}
+		catch (e) {
+			console.error(e.stack || e);
+		}
 		loaded[name] = true;
 		return artifacts[name];
 	}

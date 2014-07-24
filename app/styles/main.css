@@ -43,3 +43,9 @@ body {
 	border: 4px solid #666;
 	margin: 0 auto;
 }
+
+#game canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
