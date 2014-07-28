@@ -1,6 +1,6 @@
 Engine.module('cake.game.Maps',
 	[
-		'world.maps.MapRepository'
+		'maps.MapRepository'
 	],
 	function (MapRepository) {
 		'use strict';

@@ -3,6 +3,10 @@ Engine.module('input.Input',
 	function (InputState) {
 		'use strict';
 
+		/**
+		 *
+		 * @constructor
+		 */
 		function Input() {
 			var keyMap = {
 				38: Input.UP,      // Up

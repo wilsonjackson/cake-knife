@@ -1,20 +1,24 @@
 Engine.module('cake.entity.LittlePants',
 	[
-		'entities.EntityManager',
+		'ecs.EntityFactory',
 		'graphics.sprite.SpriteRepository',
 		'graphics.animation.Animation',
-		'entities.components.Transform',
-		'entities.components.Sprite',
-		'entities.components.Collider',
+		'cake.components.Player',
+		'cake.components.Camera',
+		'cake.components.Body',
+		'cake.components.Sprite',
+		'cake.components.Animated',
+		'cake.components.Collider',
+		'cake.components.StopOnCollide',
 		'cake.game.Sprites'
 	],
 	/**
 	 *
-	 * @param EntityManager
+	 * @param {EntityFactory} EntityFactory
+	 * @param {SpriteRepository} SpriteRepository
 	 * @param {Animation} Animation
-	 * @param SpriteRepository
 	 */
-	function (EntityManager, SpriteRepository, Animation) {
+	function (EntityFactory, SpriteRepository, Animation) {
 		'use strict';
 
 		var spriteSheet = SpriteRepository.retrieveSheet('littlepants');
@@ -99,20 +103,13 @@ Engine.module('cake.entity.LittlePants',
 //			.setDefaultDuration(5)
 //			.addFrames([spriteSheet.position(3, 1), spriteSheet.position(3, 2), spriteSheet.position(3, 3), spriteSheet.position(3, 4)]));
 
-		EntityManager.createType('player')
-			.category('player')
-			.addComponent('entities.components.Motion')
-			.addComponent('entities.components.Transform', 48, 40)
-			.addComponent('entities.components.Sprite', null, -24, 8)
-			.addComponent('entities.components.Animation', animations, 'idle-s')
-			.addComponent('entities.components.Collider', ['obstacle'])
-			.addComponent('entities.components.StopOnCollide', ['obstacle'])
-			.addBehavior('playerMove')
-			.addBehavior('movement')
-			.addBehavior('collide')
-			.addBehavior('stopOnCollide')
-			.addBehavior('animation')
-			.addDisplay('cameraFollow')
-			.addDisplay('sprite')
-			.build();
+		EntityFactory.createEntityArchetype('player')
+			.addComponent('cake.components.Player')
+			.addComponent('cake.components.Camera')
+			.addComponent('cake.components.Body', {w: 48, h: 40})
+			.addComponent('cake.components.Sprite', spriteSheet.position(0, 1), -24, 8)
+			.addComponent('cake.components.Animated', animations, 'idle-s')
+			.addComponent('cake.components.Collider', 'player', ['obstacle'])
+			.addComponent('cake.components.StopOnCollide', ['obstacle'])
+			.register();
 	});

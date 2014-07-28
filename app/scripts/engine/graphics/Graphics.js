@@ -35,13 +35,14 @@ Engine.module('graphics.Graphics',
 
 		Graphics.prototype.drawRect = function (x, y, w, h, options) {
 			var context = this.viewport.context;
+			var translated = this.viewport.translate(x, y - h);
 			if (options.fill) {
 				context.fillStyle = options.fill;
-				context.fillRect(x, y - h, w, h);
+				context.fillRect(translated.x, translated.y, w, h);
 			}
 			if (options.stroke) {
 				context.strokeStyle = options.stroke;
-				context.strokeRect(x, y - h, w, h);
+				context.strokeRect(translated.x, translated.y, w, h);
 			}
 		};
 

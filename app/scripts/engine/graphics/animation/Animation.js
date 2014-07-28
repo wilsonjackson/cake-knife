@@ -45,17 +45,17 @@ Engine.module('graphics.animation.Animation',
 			return this;
 		};
 
-		Animation.prototype.nextFrame = function () {
+		Animation.prototype.nextFrame = function (tick) {
 			if (this.currentFrame === -1) {
 				// Starting animation
 				++this.currentFrame;
-				this.frameStart = Engine.tick;
+				this.frameStart = tick;
 			}
 			// Has this frame's duration been reached?
-			if (this.frameStart + this.frames[this.currentFrame].duration < Engine.tick) {
+			if (this.frameStart + this.frames[this.currentFrame].duration < tick) {
 				// Yes — advance to next frame
 				++this.currentFrame;
-				this.frameStart = Engine.tick;
+				this.frameStart = tick;
 			}
 			// Are we out of frames?
 			if (this.currentFrame >= this.frames.length) {

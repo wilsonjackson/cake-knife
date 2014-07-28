@@ -19,21 +19,33 @@
 	var should = chai.should();
 </script>
 
+<script src="../app/scripts/engine/Engine.js"></script>
 <script src="framework.js"></script>
 
 <!-- include source files here... -->
+<script src="../app/scripts/engine/ecs/EntityMatcher.js"></script>
+<script src="../app/scripts/engine/ecs/System.js"></script>
+<script src="../app/scripts/engine/ecs/World.js"></script>
+<script src="../app/scripts/engine/loop/Time.js"></script>
 <script src="../app/scripts/engine/math/BoundingCircle.js"></script>
 <script src="../app/scripts/engine/math/BoundingRect.js"></script>
 <script src="../app/scripts/engine/math/Intersection.js"></script>
+<script src="../app/scripts/engine/math/Transform.js"></script>
 <script src="../app/scripts/engine/math/Vector.js"></script>
 <script src="../app/scripts/engine/state/StateMachine.js"></script>
 <script src="../app/scripts/engine/util/Arrays.js"></script>
+<script src="../app/scripts/engine/util/Events.js"></script>
 <script src="../app/scripts/engine/util/Path.js"></script>
 <script src="../app/scripts/engine/util/QuadTree.js"></script>
 
 <!-- include spec files here... -->
+<script src="spec/engine/ecs/EntityMatcherSpec.js"></script>
+<script src="spec/engine/ecs/SystemSpec.js"></script>
+<script src="spec/engine/ecs/WorldSpec.js"></script>
+<script src="spec/engine/loop/TimeSpec.js"></script>
 <script src="spec/engine/math/BoundingCircleSpec.js"></script>
 <script src="spec/engine/math/BoundingRectSpec.js"></script>
+<script src="spec/engine/math/TransformSpec.js"></script>
 <script src="spec/engine/math/VectorSpec.js"></script>
 <script src="spec/engine/state/StateMachineSpec.js"></script>
 <script src="spec/engine/util/ArraysSpec.js"></script>

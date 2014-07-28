@@ -35,12 +35,18 @@ Engine.module('util.Events', function () {
 
 	Events.mixin = function (object) {
 		var events = object.__events = new Events();
-		object.on = events.on.bind(events);
-		object.off = events.off.bind(events);
-		object.trigger = events.trigger.bind(events);
+		object.on = function (name, fn) {
+			events.on(name, fn);
+		};
+		object.off = function (name, fn) {
+			events.off(name, fn);
+		};
+		object.trigger = function (name, data) {
+			events.trigger(name, data);
+		};
 	};
 
-	Events.destroyMixin = function (object) {
+	Events.unmix = function (object) {
 		delete object.on;
 		delete object.off;
 		delete object.trigger;

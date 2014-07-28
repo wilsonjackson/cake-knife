@@ -1,25 +1,43 @@
 Engine.module('cake.game.Director',
 	[
 		'loop.Plugin',
-		'world.World',
-		'entities.EntityManager',
-		'behaviors.BehaviorSystem',
-		'displays.DisplaySystem',
+		'ecs.World',
+		'ecs.EntityFactory',
 		'graphics.sprite.DebugSprite',
-		'world.maps.MapRepository'
+		'maps.MapRepository',
+		'cake.game.MapLoader',
+		'cake.systems.AnimationSystem',
+		'cake.systems.BackgroundDisplaySystem',
+		'cake.systems.CameraFollowSystem',
+		'cake.systems.CollideSystem',
+		'cake.systems.MovementSystem',
+		'cake.systems.PlayerMoveSystem',
+		'cake.systems.SpriteDisplaySystem',
+		'cake.systems.HitboxDisplaySystem',
+		'cake.systems.StopOnCollideSystem'
 	],
 	/**
 	 *
 	 * @param {Plugin} Plugin
 	 * @param {World} World
-	 * @param {EntityManager} EntityManager
-	 * @param {BehaviorSystem} BehaviorSystem
-	 * @param {DisplaySystem} DisplaySystem
+	 * @param {EntityFactory} EntityFactory
 	 * @param {DebugSprite} DebugSprite
 	 * @param {MapRepository} MapRepository
+	 * @param {MapLoader} MapLoader
+	 * @param AnimationSystem
+	 * @param BackgroundDisplaySystem
+	 * @param CameraFollowSystem
+	 * @param CollideSystem
+	 * @param MovementSystem
+	 * @param PlayerMoveSystem
+	 * @param SpriteDisplaySystem
+	 * @param HitboxDisplaySystem
+	 * @param StopOnCollideSystem
 	 * @returns {Director}
 	 */
-	function (Plugin, World, EntityManager, BehaviorSystem, DisplaySystem, DebugSprite, MapRepository) {
+	function (Plugin, World, EntityFactory, DebugSprite, MapRepository, MapLoader, AnimationSystem,
+			  BackgroundDisplaySystem, CameraFollowSystem, CollideSystem, MovementSystem, PlayerMoveSystem,
+			  SpriteDisplaySystem, HitboxDisplaySystem, StopOnCollideSystem) {
 		'use strict';
 
 		function Director() {
@@ -28,53 +46,37 @@ Engine.module('cake.game.Director',
 		Director.prototype = Object.create(Plugin.prototype);
 
 		Director.prototype.start = function () {
-			BehaviorSystem.add('playerMove', 10);
-			BehaviorSystem.add('animation', 8);
-			BehaviorSystem.add('movement', 5);
-			BehaviorSystem.add('collide', 4);
-			BehaviorSystem.add('stopOnCollide', 3);
-			DisplaySystem.add('cameraFollow');
-			DisplaySystem.add('background');
-			DisplaySystem.add('sprite');
-//			DisplaySystem.add('hitbox');
 
-			EntityManager.createType('yellow')
-				.category('obstacle')
-				.addComponent('entities.components.Transform', 192, 48)
-				.addComponent('entities.components.Collider')
-				.addComponent('entities.components.Sprite', new DebugSprite('#ff0', 192, 96))
-				.addBehavior('collide')
-				.addDisplay('sprite')
-				.build();
-			EntityManager.createType('green')
-				.category('obstacle')
-				.addComponent('entities.components.Transform', 96, 48)
-				.addComponent('entities.components.Collider')
-				.addComponent('entities.components.Sprite', new DebugSprite('#0f0', 96, 96))
-				.addBehavior('collide')
-				.addDisplay('sprite')
-				.build();
+			EntityFactory.createEntityArchetype('yellow')
+				.addComponent('cake.components.Body', {w: 192, h: 48, x: 640, y: 288})
+				.addComponent('cake.components.Collider', 'obstacle')
+				.addComponent('cake.components.Sprite', new DebugSprite('#ff0', 192, 96))
+				.register();
+			EntityFactory.createEntityArchetype('green')
+				.addComponent('cake.components.Body', {w: 96, h: 48, x: 480, y: 480})
+				.addComponent('cake.components.Collider', 'obstacle')
+				.addComponent('cake.components.Sprite', new DebugSprite('#0f0', 96, 96))
+				.register();
 
-			var player = EntityManager.create('player');
-			player.getComponent('transform').translate({x: 96, y: 192});
+			var player = EntityFactory.create('player');
+			player.getComponent('body').transform.translate({x: 96, y: 192});
 
-			var yellow = EntityManager.create('yellow');
-			yellow.getComponent('transform').translate({x: 640, y: 288});
+			var game = {};
+			var world = new World(game);
+			MapLoader.load(MapRepository.retrieve('test'), world, game);
+			world.addSystem(new PlayerMoveSystem());
+			world.addSystem(new AnimationSystem());
+			world.addSystem(new MovementSystem());
+			world.addSystem(new CollideSystem());
+			world.addSystem(new StopOnCollideSystem());
+			world.addSystem(new CameraFollowSystem());
+			world.addSystem(new BackgroundDisplaySystem());
+			world.addSystem(new SpriteDisplaySystem());
+//			world.addSystem(new HitboxDisplaySystem());
 
-			var green = EntityManager.create('green');
-			green.getComponent('transform').translate({x: 480, y: 480});
-
-			var world = new World();
-//			world.loadMap({
-//				width: 16,
-//				tileSize: 96,
-//				terrain: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 3, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-//				entities: []
-//			});
 			world.addEntity(player);
-			world.addEntity(yellow);
-			world.addEntity(green);
-			MapRepository.retrieve('test').load(world);
+			world.addEntity(EntityFactory.create('yellow'));
+			world.addEntity(EntityFactory.create('green'));
 			Engine.setScene(world);
 		};
 

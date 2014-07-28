@@ -12,6 +12,15 @@ Engine.module('util.Arrays', function () {
 				}
 			}
 			return -1;
+		},
+
+		remove: function (array, item) {
+			var index = this.indexOf(array, item);
+			if (index > -1) {
+				array.splice(index, 1);
+				return true;
+			}
+			return false;
 		}
 	};
 

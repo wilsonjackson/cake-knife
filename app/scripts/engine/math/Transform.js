@@ -16,6 +16,13 @@ Engine.module('math.Transform',
 			this.rotation = 0;
 		}
 
+		Transform.fromRect = function (rect) {
+			var transform = new Transform();
+			transform.scale(rect.size);
+			transform.translate(rect.position);
+			return transform;
+		};
+
 		Transform.prototype.scale = function (scale) {
 			this.size = this.size.add(scale);
 		};
@@ -32,6 +39,12 @@ Engine.module('math.Transform',
 			this.scale(transform.size);
 			this.translate(transform.position);
 			this.rotate(transform.rotation);
+		};
+
+		Transform.prototype.interpolate = function (transform, alpha) {
+			this.size = this.size.interpolate(transform.size, alpha);
+			this.position = this.position.interpolate(transform.position, alpha);
+			this.rotation = this.rotation * alpha + transform.rotation * (1 - alpha);
 		};
 
 		Transform.prototype.zero = function () {

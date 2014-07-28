@@ -7,89 +7,73 @@ Engine.module('physics.CollisionDetector',
 	function (Vector, QuadTree, Collision) {
 		'use strict';
 
-		function detectCollision(entityA, entityB, cache) {
-			var intersection = getBounds(entityA, cache).intersection(getBounds(entityB, cache));
+		function detectCollision(bodyA, bodyB) {
+			var intersection = bodyA.bounds.intersection(bodyB.bounds);
 			if (intersection !== null) {
-				return new Collision(entityA, entityB, intersection);
+				return new Collision(bodyA, bodyB, intersection);
 			}
 			return null;
 		}
 
-		function wrapEntity(entity) {
-			var transform = entity.getComponent('transform');
+		function wrapBody(body, id) {
 			return {
-				entity: entity,
-				x: transform.position.x,
-				y: transform.position.y - transform.size.y,
-				w: transform.size.x,
-				h: transform.size.y
+				body: body,
+				id: id,
+				x: body.bounds.position.x,
+				y: body.bounds.position.y,
+				w: body.bounds.size.x,
+				h: body.bounds.size.y,
+				comparedWith: {}
 			};
 		}
 
-		function getBounds(entity, cache) {
-			if (!cache[entity.id]) {
-				// Entities are draw by their bottom-right corner, so offset them by their height
-				var bounds = entity.getComponent('transform').getBounds();
-				bounds.move(new Vector(0, -bounds.height()));
-				cache[entity.id] = bounds;
-			}
-			return cache[entity.id];
+		function canCollide(bodyA, bodyB) {
+			return Engine.util.Arrays.indexOf(bodyA.collidesWith, bodyB.category) !== -1 ||
+				Engine.util.Arrays.indexOf(bodyB.collidesWith, bodyA.category) !== -1;
 		}
 
-		function getCollidees(entity, cache) {
-			return cache[entity.id] || (cache[entity.id] = entity.getComponent('collider').collidesWith);
-		}
-
-		function canCollide(entityA, entityB, cache) {
-			var collideesA = getCollidees(entityA, cache);
-			var collideesB = getCollidees(entityB, cache);
-
-			return Engine.util.Arrays.indexOf(collideesA, entityB.category) !== -1 ||
-				Engine.util.Arrays.indexOf(collideesB, entityA.category) !== -1;
-		}
-
+		/**
+		 *
+		 * @param {int} planeWidth
+		 * @param {int} planeHeight
+		 * @constructor
+		 */
 		function CollisionDetector(planeWidth, planeHeight) {
 			this.plane = new Vector(planeWidth, planeHeight);
 		}
 
-		CollisionDetector.prototype.detectCollisions = function (entities, onCollide) {
-			var i, len;
+		CollisionDetector.prototype.detectCollisions = function (bodies, onCollide) {
+			var i, l;
 			var toCompare = [];
-			var compared = {};
 			var quadTree = new QuadTree(1, {x: 0, y: 0, w: this.plane.x, h: this.plane.y});
-			var cache = {
-				bounds: {},
-				collidees: {}
-			};
-			var count;
+			var wrappedBody;
 
-			for (i = 0, count = 0, len = entities.length; i < len; i++) {
-				var wrappedEntity = wrapEntity(entities[i], count);
-				quadTree.insert(wrappedEntity);
-				toCompare[count] = wrappedEntity;
-				++count;
+			for (i = 0, l = bodies.length; i < l; i++) {
+				wrappedBody = wrapBody(bodies[i], i);
+				quadTree.insert(wrappedBody);
+				toCompare[i] = wrappedBody;
 			}
 
-			for (i = 0, len = toCompare.length; i < len; i++) {
-				var entity = toCompare[i].entity;
-				compared[entity.id] = {};
+			for (i = 0, l = toCompare.length; i < l; i++) {
+				wrappedBody = toCompare[i];
+				var body = wrappedBody.body;
 
-				var nearby = quadTree.retrieve(toCompare[i]);
-				for (var j = 0, nearbyLen = nearby.length; j < nearbyLen; j++) {
-					var nearbyEntity = nearby[j].entity;
-					var alreadyChecked = compared[nearbyEntity.id] && compared[nearbyEntity.id][entity.id];
-					if (alreadyChecked || nearbyEntity === entity) {
+				var nearby = quadTree.retrieve(wrappedBody);
+				for (var j = 0, k = nearby.length; j < k; j++) {
+					var nearbyBody = nearby[j].body;
+					if (nearbyBody === body || !!nearby[j].comparedWith[wrappedBody.id]) {
 						continue;
 					}
-					if (!canCollide(entity, nearbyEntity, cache.collidees)) {
-						compared[entity.id][nearbyEntity.id] = true;
+					if (!canCollide(body, nearbyBody)) {
+						wrappedBody.comparedWith[nearby[j].id] = true;
 						continue;
 					}
-					var collision = detectCollision(entity, nearbyEntity, cache.bounds);
+					var collision = detectCollision(body, nearbyBody);
 					if (collision !== null) {
 						onCollide(collision);
 					}
-					compared[entity.id][nearbyEntity.id] = true;
+
+					wrappedBody.comparedWith[nearby[j].id] = true;
 				}
 			}
 		};

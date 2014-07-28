@@ -1,6 +1,4 @@
-/* global Stats */
-
-(function (Stats, window, document) {
+(function (window, document) {
 	'use strict';
 
 	var modules = {};
@@ -8,16 +6,14 @@
 
 	var Engine = {};
 
-	Engine.tick = 0;
-	Engine.delta = 0;
-
 	Engine.init = function (config) {
 		checkNotInitialized();
+		this.config = config;
 		this.injector = new Engine.Injector();
 		this.injector.load(modules);
-		modules = [];
+		modules = {};
 		this.logger = new (this.injector.get('logging.DefaultLogger'))();
-		ticker = new (this.injector.get('loop.Ticker'))(config);
+		ticker = new (this.injector.get('loop.Ticker'))();
 		registerGlobalEventHandlers();
 	};
 
@@ -37,32 +33,36 @@
 		ticker.resume();
 	};
 
+	Engine.getTicks = function () {
+		return !!ticker ? ticker.time.current.ticks : 0;
+	};
+
 	Engine.getViewport = function () {
 		return ticker.viewport;
 	};
 
 	Engine.getScene = function () {
-		return ticker.scene;
+		return ticker.state;
 	};
 
 	Engine.setScene = function (scene) {
-		ticker.scene = scene;
-		scene.activate();
+		ticker.state = scene;
+//		scene.activate();
 	};
 
 	Engine.pushScene = function (scene) {
-		ticker.scenes.push(ticker.scene);
-		ticker.scene = scene;
-		scene.activate();
+		ticker.states.push(ticker.state);
+		ticker.state = scene;
+//		scene.activate();
 	};
 
 	Engine.popScene = function () {
-		if (ticker.scenes.length > 0) {
-			ticker.scene = ticker.scenes.pop();
-			ticker.scene.activate();
+		if (ticker.states.length > 0) {
+			ticker.state = ticker.states.pop();
+//			ticker.state.activate();
 		}
 		else {
-			ticker.scene = null;
+			ticker.state = null;
 		}
 	};
 
@@ -79,7 +79,7 @@
 		var stack = [];
 		var loaded = {};
 		for (var i = 0, len = names.length; i < len; i++) {
-			mod(names[i], stack, loaded, this.artifacts);
+			mod(modules, names[i], stack, loaded, this.artifacts);
 		}
 	};
 
@@ -89,22 +89,23 @@
 
 	function checkNotInitialized() {
 		if (ticker) {
-			throw 'Engine already initialized';
+			throw new Error('Engine already initialized');
 		}
 	}
 
-	function mod(name, stack, loaded, artifacts) {
+	function mod(modules, name, stack, loaded, artifacts) {
 		if (loaded[name]) {
 			return artifacts[name];
 		}
 		if (name.indexOf('.') === -1) {
-			throw 'Module name must include a dot';
+			throw new Error('Illegal module name: ' + name + ' (Module names must include a dot)');
 		}
 		if (stack.indexOf(name) !== -1) {
-			throw 'Circular module dependency: ' + stack.join(' -> ') + ' -> ' + name;
+			throw new Error('Circular module dependency: ' + stack.join(' -> ') + ' -> ' + name);
 		}
 		if (!modules[name]) {
-			throw 'Unknown module: ' + name + ' (dependency of ' + stack[stack.length - 1] + ')';
+			throw new Error('Unknown module: ' + name +
+				(stack.length > 0 ? ' (dependency of ' + stack[stack.length - 1] + ')' : ''));
 		}
 
 		var hasDeps = !!modules[name][0].push;
@@ -114,7 +115,7 @@
 
 		stack.push(name);
 		for (var i = 0, len = deps.length; i < len; i++) {
-			args.push(mod(deps[i], stack, loaded, artifacts));
+			args.push(mod(modules, deps[i], stack, loaded, artifacts));
 		}
 		stack.pop();
 
@@ -147,4 +148,4 @@
 	}
 
 	window.Engine = Engine;
-})(Stats, window, document);
+})(window, document);

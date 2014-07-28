@@ -3,19 +3,25 @@ Engine.module('physics.Collision', function () {
 
 	/**
 	 *
-	 * @param {Entity} entityA
-	 * @param {Entity} entityB
+	 * @param {object} bodyA
+	 * @param {object} bodyB
 	 * @param intersection
 	 * @constructor
 	 */
-	function Collision(entityA, entityB, intersection) {
-		this.entityA = entityA;
-		this.entityB = entityB;
+	function Collision(bodyA, bodyB, intersection) {
+		this.bodyA = bodyA;
+		this.bodyB = bodyB;
 		this.intersection = intersection;
 	}
 
-	Collision.prototype.getOtherEntity = function (entity) {
-		return this.entityA === entity ? this.entityB : this.entityA;
+	Collision.prototype.getBodyWithoutProperty = function (name, value) {
+		if (this.bodyA[name] !== value) {
+			return this.bodyA;
+		}
+		if (this.bodyB[name] !== value) {
+			return this.bodyB;
+		}
+		return null;
 	};
 
 	return Collision;

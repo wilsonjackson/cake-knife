@@ -51,6 +51,12 @@ describe('Vector', function () {
 		expect(multiplied2.y).to.equal(6);
 	});
 
+	it('should interpolate with another vector', function () {
+		var interpolated = v1.interpolate(v2, 0.25);
+		expect(interpolated.x).to.equal(8.75);
+		expect(interpolated.y).to.equal(3.5);
+	});
+
 	it('should calculate a dot product with another vector', function () {
 		expect(v1.dotProduct(v2)).to.equal(10);
 	});

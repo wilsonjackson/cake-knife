@@ -1,6 +1,12 @@
 Engine.module('math.Vector', function () {
 	'use strict';
 
+	/**
+	 *
+	 * @param {number} x
+	 * @param {number} y
+	 * @constructor
+	 */
 	function Vector(x, y) {
 		this.x = x;
 		this.y = y;
@@ -29,6 +35,10 @@ Engine.module('math.Vector', function () {
 
 	Vector.prototype.dotProduct = function (vector) {
 		return this.x * vector.x + this.y * vector.y;
+	};
+
+	Vector.prototype.interpolate = function (vector, alpha) {
+		return new Vector(this.x * alpha + vector.x * (1 - alpha), this.y * alpha + vector.y * (1 - alpha));
 	};
 
 	Vector.prototype.toString = function () {
