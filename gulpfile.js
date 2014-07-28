@@ -12,6 +12,7 @@ var rev = require('gulp-rev');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha-phantomjs');
 var connect = require('gulp-connect');
+var runSequence = require('run-sequence');
 var resourcePipeline = require('connect-resource-pipeline');
 var htmlGlob = require('gulp-html-glob-expansion');
 var sftp = require('gulp-sftp');
@@ -39,7 +40,7 @@ gulp.task('lint', function () {
 		.pipe(jshint.reporter('fail'));
 });
 
-gulp.task('test'/*, ['lint']*/, function () {
+gulp.task('test', function () {
 	return gulp.src(config.test + '/runner.html')
 		.pipe(mocha())
 		.on('error', function () {});
@@ -59,13 +60,27 @@ gulp.task('images', function () {
 		}));
 });
 
-gulp.task('build', ['clean', 'test'], function () {
+gulp.task('compile', function () {
 	return gulp.src(config.src + '/index.html')
 		.pipe(usemin({
 			js: [uglify(), rev()],
 			css: [rev()]
 		}))
 		.pipe(gulp.dest(config.dist + '/'));
+});
+
+gulp.task('assets', function () {
+	var assets = [
+			config.src + '/assets/**/*',
+			'!' + config.src + '/**/src/*',
+			'!' + config.src + '/**/src'
+		];
+	return gulp.src(assets, {base: config.src + '/'})
+		.pipe(gulp.dest(config.dist + '/'));
+});
+
+gulp.task('build', function (cb) {
+	runSequence('clean', 'lint', 'test', ['compile', 'assets'], cb);
 });
 
 gulp.task('connect', function () {
@@ -93,4 +108,4 @@ gulp.task('deploy', ['build'], function () {
 		.pipe(sftp(config.deploy));
 });
 
-gulp.task('default', ['clean', 'lint', 'test', 'build']);
+gulp.task('default', ['build']);

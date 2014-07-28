@@ -8,6 +8,8 @@ Engine.module('graphics.sprite.SpriteSheet',
 		function SpriteSheet() {
 			this.name = null;
 			this.image = null;
+			this.width = 0;
+			this.height = 0;
 			this.grid = [0, 0];
 			this.cache = {};
 		}
@@ -40,7 +42,7 @@ Engine.module('graphics.sprite.SpriteSheet',
 			if (x1 === undefined) {
 				// Range of all sprites
 				start = 0;
-				end = (this.image.width / this.grid[0]) + (this.image.height / this.grid[1]);
+				end = (this.width / this.grid[0]) + (this.height / this.grid[1]);
 			}
 			else if (x2 === undefined) {
 				// Range between indexes
@@ -61,19 +63,25 @@ Engine.module('graphics.sprite.SpriteSheet',
 
 		SpriteSheet.prototype.indexToPosition = function (idx) {
 			this._checkImageLoaded('Cannot access sprites by index until the sprite sheet image is loaded');
-			var cols = Math.floor(this.image.width / this.grid[0]);
+			var cols = Math.floor(this.width / this.grid[0]);
 			return [idx % cols, Math.floor(idx / cols)];
 		};
 
 		SpriteSheet.prototype.positionToIndex = function (x, y) {
 			this._checkImageLoaded('Cannot access sprites by index until the sprite sheet image is loaded');
-			var cols = Math.floor(this.image.width / this.grid[0]);
+			var cols = Math.floor(this.width / this.grid[0]);
 			return y * cols + x;
 		};
 
 		SpriteSheet.prototype._checkImageLoaded = function (msg) {
-			if (!(this.image.width && this.image.height)) {
-				throw new Error(msg || 'The sprite sheet image is not loaded.');
+			if (this.width + this.height === 0) {
+				var width = this.image.naturalWidth || this.image.width;
+				var height = this.image.naturalHeight || this.image.height;
+				if (width + height === 0) {
+					throw new Error(msg || 'The sprite sheet image is not loaded.');
+				}
+				this.width = width;
+				this.height = height;
 			}
 		};
 

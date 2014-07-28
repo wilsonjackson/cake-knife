@@ -11,12 +11,13 @@ Engine.module('resources.ImageResource',
 
 		ImageResource.prototype.load = function () {
 			return Q.Promise(function (fulfill, reject) {
+				var self = this;
 				this.image.onload = function () {
 					if (this.width + this.height === 0) {
 						this.onerror('Image has no size');
 						return;
 					}
-					this.loaded = true;
+					self.loaded = true;
 					fulfill(this);
 				};
 				this.image.onerror = function (err) {

@@ -38,10 +38,12 @@ Engine.module('cake.systems.BackgroundDisplaySystem',
 
 			var map = game.map;
 			var tiles = map.layers.background;
-			var firstRow = Math.floor(visibleArea.position.y / map.tileHeight);
-			var lastRow = Math.min(firstRow + Math.ceil(visibleArea.size.y / map.tileHeight) + 1, map.height);
-			var firstCol = Math.floor(visibleArea.position.x / map.tileWidth);
-			var lastCol = Math.min(firstCol + Math.ceil(visibleArea.size.x / map.tileWidth) + 1, map.width);
+			var yOffsetInTiles = visibleArea.position.y / map.tileHeight;
+			var xOffsetInTiles = visibleArea.position.x / map.tileWidth;
+			var firstRow = Math.floor(yOffsetInTiles);
+			var lastRow = Math.min(firstRow + Math.ceil(visibleArea.size.y / map.tileHeight) + (firstRow === yOffsetInTiles ? 0 : 1), map.height);
+			var firstCol = Math.floor(xOffsetInTiles);
+			var lastCol = Math.min(firstCol + Math.ceil(visibleArea.size.x / map.tileWidth) + (firstCol === xOffsetInTiles ? 0 : 1), map.width);
 			for (var row = firstRow; row < lastRow; row++) {
 				for (var col = firstCol; col < lastCol; col++) {
 					var index = row * map.width + col;
