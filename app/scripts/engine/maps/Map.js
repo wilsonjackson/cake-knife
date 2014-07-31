@@ -47,13 +47,15 @@ Engine.module('maps.Map',
 				indexOffset: indexOffset,
 				spriteSheet: spriteSheet
 			};
-			for (var i = 0, l = this.tileSets.length; i < l; i++) {
-				if (this.tileSets[i].indexOffset > indexOffset) {
-					this.tileSets.splice(i, 0, tileSetDefinition);
+			for (var i = this.tileSets.length - 1; i >= -1; i--) {
+				if (i > -1 && this.tileSets[i].indexOffset > indexOffset) {
+					this.tileSets[i + 1] = this.tileSets[i];
+				}
+				else {
+					this.tileSets[i + 1] = tileSetDefinition;
 					return;
 				}
 			}
-			this.tileSets.push(tileSetDefinition);
 		};
 
 		Map.prototype.getCollisionBounds = function () {
@@ -75,7 +77,7 @@ Engine.module('maps.Map',
 		};
 
 //		Map.prototype.indexToOffset = function (idx) {
-//			return new Vector((idx % this.width) * this.tileWidth, Math.floor(idx / this.width) * this.tileHeight);
+//			return new Vector((idx % this.width) * this.tileWidth, (Math.floor(idx / this.width) * this.tileHeight) - this.tileHeight);
 //		};
 
 		Map.prototype.findTile = function (idx) {

@@ -16,13 +16,13 @@ Engine.module('maps.MapGrid',
 
 		/**
 		 *
-		 * @param width
-		 * @param tileSize
+		 * @param {int} width Width of the map in tiles
+		 * @param {int} tileWidth Width of an individual tile in pixels
 		 * @constructor
 		 */
-		function MapGrid(width, tileSize) {
+		function MapGrid(width, tileWidth) {
 			this.width = width;
-			this.tileSize = tileSize;
+			this.tileWidth = tileWidth;
 			this.nodes = [];
 			this.walls = [];
 		}
@@ -67,7 +67,7 @@ Engine.module('maps.MapGrid',
 			while (wall2.nodes.length > 0) {
 				wall2.nodes[0].setWall(wall1);
 			}
-			this.walls.splice(Engine.util.Arrays.indexOf(this.walls, wall2), 1);
+			Engine.util.Arrays.remove(this.walls, wall2);
 		};
 
 		MapGrid.prototype.getNodeAt = function (vector) {
@@ -76,16 +76,16 @@ Engine.module('maps.MapGrid',
 
 		//noinspection JSUnusedGlobalSymbols
 		MapGrid.prototype.calculateBoundaries = function () {
-			var i, len;
+			var i, l;
 			var keys = Object.keys(this.nodes);
-			for (i = 0, len = keys.length; i < len; i++) {
+			for (i = 0, l = keys.length; i < l; i++) {
 				this.nodes[keys[i]].pickWall();
 			}
 
 			var boundingRects = [];
-			for (i = 0, len = this.walls.length; i < len; i++) {
+			for (i = 0, l = this.walls.length; i < l; i++) {
 				if (this.walls[i].nodes.length > 0) {
-					boundingRects.push(this.walls[i].createBoundingRect(this.tileSize));
+					boundingRects.push(this.walls[i].createBoundingRect(this.tileWidth));
 				}
 			}
 			return boundingRects;

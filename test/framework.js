@@ -3,7 +3,11 @@
 
 	var Engine = window.Engine || (window.Engine = {});
 	var modules = {};
-	var injector = new Engine.Injector();
+	var injector;
+
+	beforeEach(function () {
+		injector = Engine.injector = new Engine.Injector();
+	});
 
 	Engine.module = function (name, deps, fn) {
 		modules[name] = [deps, fn];

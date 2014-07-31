@@ -1,10 +1,12 @@
 describe('Vector', function () {
 	'use strict';
 
+	var Vector;
 	var v1;
 	var v2;
 
-	beforeEach(Engine.load(['math.Vector'], function (Vector) {
+	beforeEach(Engine.load(['math.Vector'], function (_Vector_) {
+		Vector = _Vector_;
 		v1 = new Vector(5, 20);
 		v2 = new Vector(10, -2);
 	}));
@@ -59,5 +61,11 @@ describe('Vector', function () {
 
 	it('should calculate a dot product with another vector', function () {
 		expect(v1.dotProduct(v2)).to.equal(10);
+	});
+
+	it('should test whether another vector is identical', function () {
+		expect(v1.equals(v1)).to.equal(true);
+		expect(v1.equals(new Vector(v1.x, v1.y))).to.equal(true);
+		expect(v1.equals(v2)).to.equal(false);
 	});
 });

@@ -17,12 +17,12 @@ Engine.module('loop.Time',
 		}
 
 		Time.prototype.start = function () {
-			this.startTime = new Date().getTime();
+			this.startTime = Date.now();
 			this.nextTick = this.startTime + this.dt;
 		};
 
 		Time.prototype.isTickDue = function () {
-			var now = new Date().getTime();
+			var now = Date.now();
 			if (this.intervalAtSuspend === null && now >= this.nextTick) {
 				++this.current.ticks;
 				this.current.gameTime += this.dt;
@@ -36,13 +36,13 @@ Engine.module('loop.Time',
 
 		Time.prototype.suspend = function () {
 			if (this.intervalAtSuspend === null) {
-				this.intervalAtSuspend = this.nextTick - new Date().getTime();
+				this.intervalAtSuspend = this.nextTick - Date.now();
 			}
 		};
 
 		Time.prototype.resume = function () {
 			if (this.intervalAtSuspend !== null) {
-				this.nextTick = new Date().getTime() + this.intervalAtSuspend;
+				this.nextTick = Date.now() + this.intervalAtSuspend;
 				this.intervalAtSuspend = null;
 			}
 		};

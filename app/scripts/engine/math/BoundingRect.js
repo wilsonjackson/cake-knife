@@ -92,6 +92,10 @@ Engine.module('math.BoundingRect',
 			this.position = new Vector(this.position.x + halfX - halfY, this.position.y + halfY - halfX);
 		};
 
+		BoundingRect.prototype.equals = function (boundingRect) {
+			return this.position.equals(boundingRect.position) && this.size.equals(boundingRect.size);
+		};
+
 		BoundingRect.prototype.toString = function () {
 			return 'BoundingRect(position=' + this.position + ', size=' + this.size + ')';
 		};

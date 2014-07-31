@@ -1,15 +1,17 @@
 Engine.module('cake.systems.HitboxDisplaySystem',
 	[
 		'ecs.System',
-		'ecs.EntityMatcher'
+		'ecs.EntityMatcher',
+		'graphics.Viewport'
 	],
 	/**
 	 *
 	 * @param {System} System
 	 * @param {EntityMatcher} EntityMatcher
+	 * @param {Viewport} Viewport
 	 * @returns {HitboxDisplaySystem}
 	 */
-	function (System, EntityMatcher) {
+	function (System, EntityMatcher, Viewport) {
 		'use strict';
 
 		function HitboxDisplaySystem() {
@@ -19,7 +21,7 @@ Engine.module('cake.systems.HitboxDisplaySystem',
 		HitboxDisplaySystem.prototype = Object.create(System.prototype);
 
 		HitboxDisplaySystem.prototype.render = function (game, time, viewport) {
-			var layer = viewport.getLayer(0);
+			var layer = viewport.getLayer(Viewport.LAYER_FOREGROUND);
 			for (var i = 0, l = this.entities.length; i < l; i++) {
 				var body = this.entities[i].getComponent('body');
 				var transform = body.lastTransform.clone();

@@ -59,7 +59,7 @@ Engine.module('cake.game.Director',
 				.register();
 
 			var player = EntityFactory.create('player');
-			player.getComponent('body').transform.translate({x: 96, y: 192});
+			player.getComponent('body').transform.translate({x: 480, y: 768});
 
 			var game = {};
 			var world = new World(game);
@@ -75,8 +75,8 @@ Engine.module('cake.game.Director',
 //			world.addSystem(new HitboxDisplaySystem());
 
 			world.addEntity(player);
-			world.addEntity(EntityFactory.create('yellow'));
-			world.addEntity(EntityFactory.create('green'));
+//			world.addEntity(EntityFactory.create('yellow'));
+//			world.addEntity(EntityFactory.create('green'));
 			Engine.setScene(world);
 		};
 

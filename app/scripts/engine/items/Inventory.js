@@ -1,29 +1,30 @@
 Engine.module('items.Inventory',
 	[
-		'items.ItemBag'
+		'items.ItemStack'
 	],
-	function (ItemBag) {
+	function (ItemStack) {
 		'use strict';
 
 		function Inventory() {
-			// Index holds an ItemBag for every item ever added or retrieved, regardless of qty.
+			// Index holds an ItemStack for every item ever added or retrieved, regardless of qty.
 			this._idx = {};
+			this._keys = [];
 			// Items holds ItemBags from idx only if qty > 0
 			this._items = [];
 		}
 
 		Inventory.prototype._add = function (item, qty) {
 			var inv = this;
-			var itemBag = new ItemBag(item, qty);
-			itemBag.on('nonzero', Array.prototype.push.bind(this._items));
+			var itemBag = new ItemStack(item, qty);
+			itemBag.on('nonzero', function () {
+				inv._items.push(itemBag);
+			});
 			itemBag.on('zero', function () {
-				var idx = Engine.util.Arrays.indexOf(inv._items, itemBag);
-				if (idx > -1) {
-					inv._items.splice(idx, 1);
-				}
+				Engine.util.Arrays.remove(inv._items, itemBag);
 			});
 
 			this._idx[item.id] = itemBag;
+			this._keys.push(item.id);
 			if (qty > 0) {
 				this._items.push(itemBag);
 			}
@@ -41,8 +42,11 @@ Engine.module('items.Inventory',
 		};
 
 		Inventory.prototype.clear = function () {
-			this._idx = {};
-			this._items.splice(0, this._items.length);
+			for (var i = 0, l = this._keys.length; i < l; i++) {
+				this._idx[this._keys[i]] = null;
+			}
+			Engine.util.Arrays.empty(this._keys);
+			Engine.util.Arrays.empty(this._items);
 		};
 
 		return Inventory;

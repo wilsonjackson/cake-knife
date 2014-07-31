@@ -46,5 +46,9 @@ Engine.module('graphics.Graphics',
 			}
 		};
 
+		Graphics.prototype.clearRect = function (x, y, w, h) {
+			this.viewport.context.clearRect(x, y, w, h);
+		};
+
 		return Graphics;
 	});

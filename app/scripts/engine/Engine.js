@@ -71,20 +71,27 @@
 	};
 
 	Engine.Injector = function () {
+		this.artifacts = {};
+		this.loaded = {};
 	};
 
 	Engine.Injector.prototype.load = function (modules) {
-		this.artifacts = {};
 		var names = Object.keys(modules);
 		var stack = [];
-		var loaded = {};
 		for (var i = 0, len = names.length; i < len; i++) {
-			mod(modules, names[i], stack, loaded, this.artifacts);
+			mod(modules, names[i], stack, this.loaded, this.artifacts);
 		}
 	};
 
 	Engine.Injector.prototype.get = function (name) {
 		return this.artifacts[name];
+	};
+
+	Engine.Injector.prototype.override = function (name, value) {
+		if (!this.artifacts[name]) {
+			throw new Error('Cannot override unknown artifact "' + name + '"');
+		}
+		this.artifacts[name] = value;
 	};
 
 	function checkNotInitialized() {

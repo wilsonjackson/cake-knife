@@ -95,6 +95,14 @@ describe('Bounding rect', function () {
 		expect(distance.y).to.equal(3);
 	});
 
+	it('should test whether another rect is identical', function () {
+		expect(rect.equals(rect)).to.equal(true);
+		expect(rect.equals(
+			new BoundingRect(new Vector(rect.position.x, rect.position.y), new Vector(rect.size.x, rect.size.y))))
+			.to.equal(true);
+		expect(rect.equals(new BoundingRect(new Vector(0, 0), new Vector(1, 1)))).to.equal(false);
+	});
+
 	it('should construct an instance using corner vectors', function () {
 		var cornerRect = BoundingRect.fromCorners(new Vector(2, 3), new Vector(8, 10));
 		expect(cornerRect.position.x).to.equal(2);

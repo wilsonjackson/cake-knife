@@ -29,6 +29,7 @@ Engine.module('maps.MapWall',
 		};
 
 		MapWall.prototype.removeNode = function (node) {
+			// Intentionally not using remove to preserve node order (and this doesn't need to be that fast)
 			var i = Engine.util.Arrays.indexOf(this.nodes, node);
 			this.nodes.splice(i, 1);
 		};
@@ -38,11 +39,11 @@ Engine.module('maps.MapWall',
 			return i !== 0 && i !== this.nodes.length - 1;
 		};
 
-		MapWall.prototype.createBoundingRect = function (tileSize) {
+		MapWall.prototype.createBoundingRect = function (tileWidth) {
 			var size = new Vector(
 					this.axis === MapNode.AXIS_X ? this.nodes.length : 1,
 					this.axis === MapNode.AXIS_Y ? this.nodes.length : 1);
-			return new BoundingRect(this.nodes[0].position.multiply(tileSize), size.multiply(tileSize));
+			return new BoundingRect(this.nodes[0].position.multiply(tileWidth), size.multiply(tileWidth));
 		};
 
 		MapWall.prototype.toString = function () {

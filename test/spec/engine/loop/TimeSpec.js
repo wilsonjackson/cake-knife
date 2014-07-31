@@ -1,4 +1,4 @@
-describe.only('Time keeper', function () {
+describe('Time keeper', function () {
 	'use strict';
 
 	var dt = 20;

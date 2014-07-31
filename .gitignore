@@ -1,6 +1,7 @@
 bower_components
 node_modules
 dist
+asset_src
 
 .idea
 atlassian-ide-plugin.xml

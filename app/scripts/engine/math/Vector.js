@@ -41,6 +41,10 @@ Engine.module('math.Vector', function () {
 		return new Vector(this.x * alpha + vector.x * (1 - alpha), this.y * alpha + vector.y * (1 - alpha));
 	};
 
+	Vector.prototype.equals = function (vector) {
+		return this.x === vector.x && this.y === vector.y;
+	};
+
 	Vector.prototype.toString = function () {
 		return 'Vector(' + this.x + ', ' + this.y + ')';
 	};
