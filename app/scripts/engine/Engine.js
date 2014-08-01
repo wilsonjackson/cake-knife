@@ -9,17 +9,49 @@
 	Engine.init = function (config) {
 		checkNotInitialized();
 		this.config = config;
+
+		this.module('core.Engine',
+			[
+				'logging.DefaultLogger',
+				'resources.ResourceLoader',
+				'loop.PluginRegistry',
+				'loop.Plugin',
+				'loop.Ticker'
+			],
+			this._initGameLoop.bind(this));
+
 		this.injector = new Engine.Injector();
 		this.injector.load(modules);
 		modules = {};
-		this.logger = new (this.injector.get('logging.DefaultLogger'))();
-		ticker = new (this.injector.get('loop.Ticker'))();
+	};
+
+	Engine._initGameLoop = function (DefaultLogger, ResourceLoader, PluginRegistry, Plugin, Ticker) {
+		this.logger = new DefaultLogger();
+		this.resourceLoader = ResourceLoader;
+		this.pluginRegistry = new PluginRegistry();
+		this._initPlugins(this.config.plugins || [], Plugin);
+		ticker = new Ticker();
 		registerGlobalEventHandlers();
+	};
+
+	Engine._initPlugins = function (plugins, Plugin) {
+		var self = this;
+		plugins.forEach(function (pluginName) {
+			self.logger.info('Loading plugin: ' + pluginName);
+			var PluginArtifact = self.injector.get(pluginName);
+			if (PluginArtifact instanceof Plugin) {
+				self.pluginRegistry.add(PluginArtifact);
+			}
+			else {
+				self.pluginRegistry.add(new PluginArtifact());
+			}
+		});
+		this.pluginRegistry.update();
 	};
 
 	Engine.start = function () {
 		Engine.logger.info('Starting preload');
-		this.injector.get('resources.ResourceLoader').load().then(function () {
+		this.resourceLoader.load().then(function () {
 			Engine.logger.info('Preload complete');
 			ticker.start();
 		});

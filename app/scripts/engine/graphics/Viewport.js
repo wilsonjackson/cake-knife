@@ -1,8 +1,12 @@
 Engine.module('graphics.Viewport',
 	[
-		'graphics.Layer'
+		'graphics.webgl.GLUtils',
+		'graphics.webgl.GLProvider',
+		'graphics.canvas.Canvas2dProvider',
+		'math.BoundingRect',
+		'math.Vector'
 	],
-	function (Layer) {
+	function (GLUtils, GLProvider, Canvas2dProvider, BoundingRect, Vector) {
 		'use strict';
 
 		/**
@@ -11,13 +15,31 @@ Engine.module('graphics.Viewport',
 		 */
 		function Viewport(mainCanvas) {
 			this.mainCanvas = mainCanvas;
-			this.layers = {0: new Layer(mainCanvas, this, true)};
+			this.width = mainCanvas.width;
+			this.height = mainCanvas.height;
+			this.sceneOffset = new Vector(0, 0);
+			this.layers = {};
+			this.initGraphics();
+			this.createLayer(0, true);
 		}
 
 		// Layer preset constants
-		Viewport.LAYER_BACKGROUND = -10;
-		Viewport.LAYER_MAIN = 0;
-		Viewport.LAYER_FOREGROUND = 10;
+		Viewport.LAYER_BACKGROUND = 1;
+		Viewport.LAYER_MAIN = 2;
+		Viewport.LAYER_FOREGROUND = 3;
+
+		Viewport.prototype.initGraphics = function () {
+			try {
+				GLUtils.init(this.mainCanvas);
+				this.gfxProvider = new GLProvider();
+				Engine.config.disableLazyBackgrounds = true;
+				Engine.logger.info('Enabled WebGL mode.');
+			}
+			catch (e) {
+				Engine.logger.error('WebGL not available; falling back to 2d canvas.', e.stack || e);
+				this.gfxProvider = new Canvas2dProvider();
+			}
+		};
 
 		/**
 		 *
@@ -37,21 +59,7 @@ Engine.module('graphics.Viewport',
 		 * @returns {Layer}
 		 */
 		Viewport.prototype.createLayer = function (index, trackScene) {
-			var canvas = this.cloneCanvas();
-			var layers = Object.keys(this.layers).sort();
-			var insertBefore = null;
-			var nextLayer;
-			while (layers.length > 0) {
-				nextLayer = layers.shift();
-				if (nextLayer > index) {
-					insertBefore = this.getLayer(nextLayer).canvas;
-					break;
-				}
-			}
-			insertBefore = insertBefore || this.getLayer(nextLayer).canvas.nextSibling;
-			this.mainCanvas.parentNode.insertBefore(canvas, insertBefore);
-
-			this.layers[index] = new Layer(canvas, this, trackScene);
+			this.layers[index] = this.gfxProvider.createLayer(index, trackScene, this);
 			if (trackScene) {
 				this.layers[index].sceneOffset = this.layers[0].sceneOffset;
 			}
@@ -70,21 +78,30 @@ Engine.module('graphics.Viewport',
 			return this.layers[index];
 		};
 
-		/**
-		 *
-		 * @returns {Layer}
-		 */
-		Viewport.prototype.getMainLayer = function () {
-			return this.getLayer(this.LAYER_MAIN);
+		Viewport.prototype.centerOn = function (x, y, w, h, sceneWidth, sceneHeight) {
+			var width = this.width;
+			var height = this.height;
+			this.sceneOffset.x = Math.round(Math.min(Math.max(0, x - ((width - (w || 0)) / 2)), sceneWidth - width));
+			this.sceneOffset.y = Math.round(Math.min(Math.max(0, y - ((height - (h || 0)) / 2)), sceneHeight - height));
 		};
 
-		Viewport.prototype.changeSceneOffset = function (offsetVector) {
-			var layers = Object.keys(this.layers);
-			for (var i = 0, l = layers.length; i < l; i++) {
-				if (this.layers[layers[i]].trackScene) {
-					this.layers[layers[i]].sceneOffset = offsetVector;
-				}
-			}
+		/**
+		 *
+		 * @returns {BoundingRect}
+		 */
+		Viewport.prototype.getVisibleArea = function () {
+			return new BoundingRect(
+				new Vector(this.sceneOffset.x, this.sceneOffset.y),
+				new Vector(this.width, this.height));
+		};
+
+		//noinspection JSUnusedGlobalSymbols
+		Viewport.prototype.getCenter = function () {
+			return this.sceneOffset.add(new Vector(Math.round(this.width / 2), Math.round(this.height / 2)));
+		};
+
+		Viewport.prototype.flush = function () {
+			this.gfxProvider.flush();
 		};
 
 		return Viewport;

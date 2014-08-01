@@ -5,7 +5,7 @@ Engine.module('resources.ImageResource',
 
 		function ImageResource(url) {
 			this.url = url;
-			this.image = new Image(url);
+			this.image = new Image();
 			this.loaded = false;
 		}
 

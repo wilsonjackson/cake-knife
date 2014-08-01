@@ -22,7 +22,7 @@ Engine.module('cake.systems.CameraFollowSystem',
 			if (this.entities.length > 0) {
 				var body = this.entities[0].getComponent('body');
 				var position = body.lastTransform.position.interpolate(body.transform.position, time.alpha);
-				viewport.getMainLayer().centerOn(
+				viewport.centerOn(
 					Math.round(position.x),
 					Math.round(position.y),
 					body.transform.size.x,

@@ -15,16 +15,7 @@ Engine.module('loop.Ticker',
 			}
 
 			this.time = new Time(1000 / 50); // Target 50 fps
-			this.plugins = (config.plugins || []).map(function (pluginName) {
-				Engine.logger.info('Loading plugin: ' + pluginName);
-				var PluginArtifact = Engine.injector.get(pluginName);
-				if (PluginArtifact instanceof Plugin) {
-					return PluginArtifact;
-				}
-				else {
-					return new PluginArtifact();
-				}
-			});
+			this.plugins = Engine.pluginRegistry.plugins;
 			this.viewport = new Viewport(config.canvas);
 			this.input = new Input();
 			this.state = null;
@@ -93,6 +84,8 @@ Engine.module('loop.Ticker',
 					return;
 				}
 
+				Engine.pluginRegistry.update();
+
 				while (this.time.isTickDue() && loops < maxFrameSkip) {
 					// Process input
 					var inputState = this.input.readInput();
@@ -118,6 +111,7 @@ Engine.module('loop.Ticker',
 					this.plugins[i].preRender(this.state, this.time.current, this.viewport);
 				}
 				this.state.render(this.time.current, this.viewport);
+				this.viewport.flush();
 				for (i = this.plugins.length - 1; i >= 0; i--) {
 					this.plugins[i].postRender(this.state, this.time.current, this.viewport);
 				}

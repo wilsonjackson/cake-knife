@@ -48,6 +48,37 @@
 	ga('send', 'pageview');
 </script>
 
+<script type="x-shader/x-vertex" id="shader-vs">
+	attribute vec2 aVertexPosition;
+	attribute vec2 aTextureCoords;
+
+	uniform vec2 uViewportDimensions;
+	uniform vec2 uWorldTranslation;
+
+	varying vec2 vTextureCoords;
+
+	void main(void) {
+		vec2 pxPosition = aVertexPosition + uWorldTranslation;
+		//vec2 pxPosition = aVertexPosition + uTranslation + uWorldTranslation;
+		gl_Position = vec4((pxPosition / uViewportDimensions * 2.0 - 1.0) * vec2(1, -1), 0.0, 1.0);
+		vTextureCoords = aTextureCoords;
+	}
+
+</script>
+
+<script type="x-shader/x-fragment" id="shader-fs">
+	precision mediump float;
+
+	uniform sampler2D uImage;
+
+	varying vec2 vTextureCoords;
+
+	void main(void) {
+		gl_FragColor = texture2D(uImage, vTextureCoords);
+	}
+
+</script>
+
 <!-- build:js scripts/cake-knife.js -->
 <script src="scripts/engine/Engine.js"></script>
 <!--suppress HtmlUnknownTarget -->

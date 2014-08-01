@@ -29,31 +29,31 @@ Engine.module('graphics.HudScene',
 			});
 		};
 
-		HudScene.prototype.render = function (viewport) {
-			for (var i = 0, len = this.components.length; i < len; i++) {
-				var c = this.components[i];
-				c.render(subViewForComponent(viewport, c.size, c.alignment));
-			}
-		};
+//		HudScene.prototype.render = function (viewport) {
+//			for (var i = 0, len = this.components.length; i < len; i++) {
+//				var c = this.components[i];
+//				c.render(subViewForComponent(viewport, c.size, c.alignment));
+//			}
+//		};
 
-		function subViewForComponent(viewport, size, alignment) {
-			var x, y;
-
-			if (alignment.x === 0) {
-				x = Math.round((viewport.width - size.x) / 2);
-			}
-			else {
-				x = alignment.x === -1 ? 0 : viewport.width - size.x;
-			}
-			if (alignment.y === 0) {
-				y = viewport.height - Math.round((viewport.height - size.y) / 2);
-			}
-			else {
-				y = alignment.y === -1 ? size.y : viewport.height;
-			}
-
-			return viewport.subView(x, y, size.x, size.y);
-		}
+//		function subViewForComponent(viewport, size, alignment) {
+//			var x, y;
+//
+//			if (alignment.x === 0) {
+//				x = Math.round((viewport.width - size.x) / 2);
+//			}
+//			else {
+//				x = alignment.x === -1 ? 0 : viewport.width - size.x;
+//			}
+//			if (alignment.y === 0) {
+//				y = viewport.height - Math.round((viewport.height - size.y) / 2);
+//			}
+//			else {
+//				y = alignment.y === -1 ? size.y : viewport.height;
+//			}
+//
+//			return viewport.subView(x, y, size.x, size.y);
+//		}
 
 		return HudScene;
 	});

@@ -2,33 +2,40 @@ Engine.module('cake.systems.HitboxDisplaySystem',
 	[
 		'ecs.System',
 		'ecs.EntityMatcher',
-		'graphics.Viewport'
+		'math.Vector',
+		'graphics.DebugLayer'
 	],
 	/**
 	 *
 	 * @param {System} System
 	 * @param {EntityMatcher} EntityMatcher
-	 * @param {Viewport} Viewport
+	 * @param {Vector} Vector
+	 * @param {DebugLayer} DebugLayer
 	 * @returns {HitboxDisplaySystem}
 	 */
-	function (System, EntityMatcher, Viewport) {
+	function (System, EntityMatcher, Vector, DebugLayer) {
 		'use strict';
 
 		function HitboxDisplaySystem() {
 			System.call(this, new EntityMatcher('body', 'collider'));
+			DebugLayer.enable();
 		}
 
 		HitboxDisplaySystem.prototype = Object.create(System.prototype);
 
 		HitboxDisplaySystem.prototype.render = function (game, time, viewport) {
-			var layer = viewport.getLayer(Viewport.LAYER_FOREGROUND);
 			for (var i = 0, l = this.entities.length; i < l; i++) {
 				var body = this.entities[i].getComponent('body');
 				var transform = body.lastTransform.clone();
 				transform.interpolate(body.transform, time.alpha);
-				layer.getGraphics().drawRect(
+
+				var position = new Vector(
 						transform.position.x + 0.5,
-						transform.position.y + 0.5,
+						transform.position.y - transform.size.y + 0.5)
+					.subtract(viewport.sceneOffset);
+				DebugLayer.drawRect(
+					position.x,
+					position.y,
 					transform.size.x,
 					transform.size.y,
 					{stroke: '#f00'});

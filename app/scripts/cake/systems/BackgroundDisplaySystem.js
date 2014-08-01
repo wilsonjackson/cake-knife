@@ -19,6 +19,7 @@ Engine.module('cake.systems.BackgroundDisplaySystem',
 		function BackgroundDisplaySystem() {
 			System.call(this, new EntityMatcher('background'));
 			this.lastVisibleArea = null;
+			this.disableLazyBackgrounds = Engine.config.disableLazyBackgrounds;
 		}
 
 		BackgroundDisplaySystem.prototype = Object.create(System.prototype);
@@ -26,10 +27,10 @@ Engine.module('cake.systems.BackgroundDisplaySystem',
 		BackgroundDisplaySystem.prototype.render = function (game, time, viewport) {
 			var background = viewport.getLayer(Viewport.LAYER_BACKGROUND);
 			var foreground = viewport.getLayer(Viewport.LAYER_FOREGROUND);
-			var visibleArea = background.getVisibleArea();
+			var visibleArea = viewport.getVisibleArea();
 			var areaChanged = true;
 
-			if (this.lastVisibleArea !== null) {
+			if (!this.disableLazyBackgrounds && this.lastVisibleArea !== null) {
 				if (this.lastVisibleArea.equals(visibleArea)) {
 					areaChanged = false;
 				}
@@ -49,15 +50,17 @@ Engine.module('cake.systems.BackgroundDisplaySystem',
 			if (!areaChanged && !fullClear) {
 				return;
 			}
+
+			var graphics = layer.getGraphics();
 			if (fullClear) {
-				layer.clear();
+				graphics.clear();
 			}
 
 			var sprite;
 			for (var i = 0, l = tilesInView.length; i < l; i++) {
 				var textureIndex = tiles[tilesInView[i].tileIndex];
 				if (!!textureIndex && !!(sprite = map.findTile(textureIndex))) {
-					layer.getGraphics().drawSprite(sprite, tilesInView[i].position, 0);
+					graphics.drawSprite(sprite, tilesInView[i].position, 0);
 				}
 			}
 		};

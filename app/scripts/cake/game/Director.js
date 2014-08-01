@@ -3,7 +3,6 @@ Engine.module('cake.game.Director',
 		'loop.Plugin',
 		'ecs.World',
 		'ecs.EntityFactory',
-		'graphics.sprite.DebugSprite',
 		'maps.MapRepository',
 		'cake.game.MapLoader',
 		'cake.systems.AnimationSystem',
@@ -21,7 +20,6 @@ Engine.module('cake.game.Director',
 	 * @param {Plugin} Plugin
 	 * @param {World} World
 	 * @param {EntityFactory} EntityFactory
-	 * @param {DebugSprite} DebugSprite
 	 * @param {MapRepository} MapRepository
 	 * @param {MapLoader} MapLoader
 	 * @param AnimationSystem
@@ -35,9 +33,9 @@ Engine.module('cake.game.Director',
 	 * @param StopOnCollideSystem
 	 * @returns {Director}
 	 */
-	function (Plugin, World, EntityFactory, DebugSprite, MapRepository, MapLoader, AnimationSystem,
-			  BackgroundDisplaySystem, CameraFollowSystem, CollideSystem, MovementSystem, PlayerMoveSystem,
-			  SpriteDisplaySystem, HitboxDisplaySystem, StopOnCollideSystem) {
+	function (Plugin, World, EntityFactory, MapRepository, MapLoader, AnimationSystem, BackgroundDisplaySystem,
+			  CameraFollowSystem, CollideSystem, MovementSystem, PlayerMoveSystem, SpriteDisplaySystem,
+			  HitboxDisplaySystem, StopOnCollideSystem) {
 		'use strict';
 
 		function Director() {
@@ -47,16 +45,16 @@ Engine.module('cake.game.Director',
 
 		Director.prototype.start = function () {
 
-			EntityFactory.createEntityArchetype('yellow')
-				.addComponent('cake.components.Body', {w: 192, h: 48, x: 640, y: 288})
-				.addComponent('cake.components.Collider', 'obstacle')
-				.addComponent('cake.components.Sprite', new DebugSprite('#ff0', 192, 96))
-				.register();
-			EntityFactory.createEntityArchetype('green')
-				.addComponent('cake.components.Body', {w: 96, h: 48, x: 480, y: 480})
-				.addComponent('cake.components.Collider', 'obstacle')
-				.addComponent('cake.components.Sprite', new DebugSprite('#0f0', 96, 96))
-				.register();
+//			EntityFactory.createEntityArchetype('yellow')
+//				.addComponent('cake.components.Body', {w: 192, h: 48, x: 640, y: 288})
+//				.addComponent('cake.components.Collider', 'obstacle')
+//				.addComponent('cake.components.Sprite', new DebugSprite('#ff0', 192, 96))
+//				.register();
+//			EntityFactory.createEntityArchetype('green')
+//				.addComponent('cake.components.Body', {w: 96, h: 48, x: 480, y: 480})
+//				.addComponent('cake.components.Collider', 'obstacle')
+//				.addComponent('cake.components.Sprite', new DebugSprite('#0f0', 96, 96))
+//				.register();
 
 			var player = EntityFactory.create('player');
 			player.getComponent('body').transform.translate({x: 480, y: 768});

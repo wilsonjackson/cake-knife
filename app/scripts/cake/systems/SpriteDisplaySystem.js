@@ -2,16 +2,18 @@ Engine.module('cake.systems.SpriteDisplaySystem',
 	[
 		'ecs.System',
 		'ecs.EntityMatcher',
+		'graphics.Viewport',
 		'math.Vector'
 	],
 	/**
 	 *
 	 * @param {System} System
 	 * @param {EntityMatcher} EntityMatcher
+	 * @param {Viewport} Viewport
 	 * @param {Vector} Vector
 	 * @returns {SpriteDisplaySystem}
 	 */
-	function (System, EntityMatcher, Vector) {
+	function (System, EntityMatcher, Viewport, Vector) {
 		'use strict';
 
 		function SpriteDisplaySystem() {
@@ -23,7 +25,7 @@ Engine.module('cake.systems.SpriteDisplaySystem',
 		SpriteDisplaySystem.prototype.render = function (game, time, viewport) {
 			var spriteComponent;
 			var transform;
-			viewport.getLayer(0).clear();
+			viewport.getLayer(Viewport.LAYER_MAIN).getGraphics().clear();
 			this.sortEntities();
 			for (var i = 0, l = this.entities.length; i < l; i++) {
 				var body = this.entities[i].getComponent('body');

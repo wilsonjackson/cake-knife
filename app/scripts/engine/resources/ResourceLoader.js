@@ -5,9 +5,18 @@ Engine.module('resources.ResourceLoader',
 
 		var queue = [];
 
+		/**
+		 *
+		 * @constructor
+		 */
 		function ResourceLoader() {
 			this.loading = false;
+			this.observers = [];
 		}
+
+		ResourceLoader.prototype.observe = function (observerFn) {
+			this.observers.push(observerFn);
+		};
 
 		ResourceLoader.prototype.load = function () {
 			this.loading = true;
@@ -18,6 +27,7 @@ Engine.module('resources.ResourceLoader',
 			function load(resource) {
 				return resource.load()
 					.then(function (data) {
+						notifyObservers({loaded: resource, finished: false});
 						Engine.logger.debug(resource + ' loaded; ' + queue.length + ' resource(s) remaining');
 						return data;
 					})
@@ -31,6 +41,12 @@ Engine.module('resources.ResourceLoader',
 						}
 						throw new Error('Failed loading ' + resource + ': ' + reason);
 					});
+			}
+
+			function notifyObservers(resource) {
+				for (var i = 0, l = self.observers.length; i < l; i++) {
+					self.observers[i](resource);
+				}
 			}
 
 			function emptyQueue() {
@@ -53,6 +69,7 @@ Engine.module('resources.ResourceLoader',
 				})
 				.finally(function () {
 					self.loading = false;
+					notifyObservers({loaded: null, finished: true});
 					Engine.logger.info('Done loading resources (' + total + ' file(s) with ' + errors + ' error(s))');
 				});
 		};
@@ -61,7 +78,7 @@ Engine.module('resources.ResourceLoader',
 			if (this.loading) {
 				Engine.logger.debug('Added resource ' + resource + ' to pending queue');
 			}
-		queue.push(resource);
+			queue.push(resource);
 			return resource;
 		};
 
